@@ -2,7 +2,7 @@
 // https://orm.drizzle.team/docs/sql-schema-declaration
 
 import { sql } from "drizzle-orm";
-import { index, pgTableCreator, decimal, pgEnum } from "drizzle-orm/pg-core";
+import { index, pgTableCreator, decimal, pgEnum, pgTable, serial, timestamp, text } from "drizzle-orm/pg-core";
 
 /**
  * This is an example of how to use the multi-project schema feature of Drizzle ORM. Use the same
@@ -27,7 +27,41 @@ export const posts = createTable(
   (t) => [index("name_idx").on(t.name)],
 );
 
-export const schools = createTable(
+export const users = pgTable('users', (d ) => ({
+  id: d.integer().primaryKey().generatedByDefaultAsIdentity(),
+  name: d.varchar({ length: 256 }).notNull(),
+  email: d.varchar({ length: 256 }).notNull().unique(),
+  createdAt: d.timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: d.timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+
+  // Google Calendar fields
+  googleCalendarAccessToken: d.text('google_calendar_access_token'),
+  googleCalendarRefreshToken: d.text('google_calendar_refresh_token'),
+  googleCalendarTokenExpires: d.timestamp('google_calendar_token_expires', { withTimezone: true }),
+
+  // Apple Calendar fields
+  appleCalendarAccessToken: d.text('apple_calendar_access_token'),
+  appleCalendarRefreshToken: d.text('apple_calendar_refresh_token'),
+  appleCalendarTokenExpires: timestamp('apple_calendar_token_expires', { withTimezone: true }),
+}));
+
+export const lists = pgTable('lists', (d ) => ({
+  id: d.integer().primaryKey().generatedByDefaultAsIdentity(),
+  name: d.varchar({ length: 256 }).notNull(),
+  user_id: d.integer().notNull().references(() => users.id),
+  createdAt: d.timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: d.timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+}));
+
+export const list_entries = pgTable('list_entries', (d ) => ({
+  id: d.integer().primaryKey().generatedByDefaultAsIdentity(),
+  list_id: d.integer().notNull().references(() => lists.id),
+  school_id: d.integer().notNull().references(() => schools.id),
+  createdAt: d.timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: d.timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+}));
+
+export const schools = pgTable(
   "schools",
   (d) => ({
     id: d.integer().primaryKey().generatedByDefaultAsIdentity(),
@@ -53,7 +87,7 @@ export const applicationTypeEnum = pgEnum("application_type_enum", [
   "ED2",
 ]);
 
-export const deadlines = createTable(
+export const deadlines = pgTable(
   "deadlines",
   (d) => ({
     id: d.integer().primaryKey().generatedByDefaultAsIdentity(),
@@ -69,7 +103,7 @@ export const deadlines = createTable(
 //   (t) => [index("deadlines_school_id_idx").on(t.school_id)],
 );
 
-export const supplements = createTable(
+export const supplements = pgTable(
   "supplements",
   (d) => ({
     id: d.integer().primaryKey().generatedByDefaultAsIdentity(),

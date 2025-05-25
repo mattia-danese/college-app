@@ -20,6 +20,20 @@ export function MainPage() {
     query: debouncedQuery?.trim() === "" ? undefined : debouncedQuery,
   });
 
+  const userEmail = "test@test.com";
+
+  const { data: user } = api.users.get.useQuery({ email: userEmail });
+
+  console.log("USER:", user);
+
+  const { data: entries } = api.list_entries.get_by_user.useQuery({
+    user_id: user?.id ?? 0
+  },{
+    enabled: !!user, // only run this query after user is available
+  });
+
+  console.log("ALL ENTRIES:", entries);
+
   return (
     <div className="p-4 max-w-2xl mx-auto w-[60vw] flex flex-col min-h-screen">
       <Input
