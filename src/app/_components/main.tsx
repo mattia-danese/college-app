@@ -7,6 +7,7 @@ import { api } from "~/trpc/react";
 
 import { useDebounce } from "./useDebounce";
 import Spinner from "./Spinner";
+import { SignedIn, SignedOut, SignInButton, SignUpButton, UserButton } from "@clerk/nextjs";
 
 export function MainPage() {
   const [query, setQuery] = useState("");
@@ -36,6 +37,14 @@ export function MainPage() {
 
   return (
     <div className="p-4 max-w-2xl mx-auto w-[60vw] flex flex-col min-h-screen">
+      <SignedOut>
+        <SignInButton />
+        <SignUpButton />
+      </SignedOut>
+        <SignedIn>
+        <UserButton />
+      </SignedIn>
+      
       <Input
         placeholder="Search schools..."
         value={query}
