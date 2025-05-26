@@ -31,6 +31,7 @@ export const users = pgTable('users', (d ) => ({
   id: d.integer().primaryKey().generatedByDefaultAsIdentity(),
   name: d.varchar({ length: 256 }).notNull(),
   email: d.varchar({ length: 256 }).notNull().unique(),
+  clerk_id: d.text().notNull().unique(),
   createdAt: d.timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   updatedAt: d.timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
 
@@ -48,15 +49,15 @@ export const users = pgTable('users', (d ) => ({
 export const lists = pgTable('lists', (d ) => ({
   id: d.integer().primaryKey().generatedByDefaultAsIdentity(),
   name: d.varchar({ length: 256 }).notNull(),
-  user_id: d.integer().notNull().references(() => users.id),
+  user_id: d.integer().notNull().references(() => users.id, { onDelete: 'cascade' }),
   createdAt: d.timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   updatedAt: d.timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
 }));
 
 export const list_entries = pgTable('list_entries', (d ) => ({
   id: d.integer().primaryKey().generatedByDefaultAsIdentity(),
-  list_id: d.integer().notNull().references(() => lists.id),
-  school_id: d.integer().notNull().references(() => schools.id),
+  list_id: d.integer().notNull().references(() => lists.id, { onDelete: 'cascade' }),
+  school_id: d.integer().notNull().references(() => schools.id, { onDelete: 'cascade' }),
   createdAt: d.timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   updatedAt: d.timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
 }));
@@ -91,7 +92,7 @@ export const deadlines = pgTable(
   "deadlines",
   (d) => ({
     id: d.integer().primaryKey().generatedByDefaultAsIdentity(),
-    school_id: d.integer().notNull().references(() => schools.id),
+    school_id: d.integer().notNull().references(() => schools.id, { onDelete: 'cascade' }),
     appication_type: applicationTypeEnum(),
     date: d.date().notNull(),
     createdAt: d
@@ -107,7 +108,7 @@ export const supplements = pgTable(
   "supplements",
   (d) => ({
     id: d.integer().primaryKey().generatedByDefaultAsIdentity(),
-    school_id: d.integer().notNull().references(() => schools.id),
+    school_id: d.integer().notNull().references(() => schools.id, { onDelete: 'cascade' }),
     prompt: d.varchar({ length: 256 }).notNull(),
     description: d.varchar({ length: 256 }).notNull(),
     word_count: d.varchar({ length: 256 }).notNull(),

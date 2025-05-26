@@ -15,6 +15,27 @@
       "when": 1748212374247,
       "tag": "0001_square_joseph",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1748236122691,
+      "tag": "0002_bright_tyger_tiger",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1748238273766,
+      "tag": "0003_quick_titanium_man",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1748238330129,
+      "tag": "0004_handy_forge",
+      "breakpoints": true
     }
   ]
 }

@@ -7,7 +7,7 @@ import { api } from "~/trpc/react";
 
 import { useDebounce } from "./useDebounce";
 import Spinner from "./Spinner";
-import { SignedIn, SignedOut, SignInButton, SignUpButton, UserButton } from "@clerk/nextjs";
+import { useUser, SignedIn, SignedOut, SignInButton, SignUpButton, UserButton } from "@clerk/nextjs";
 
 export function MainPage() {
   const [query, setQuery] = useState("");
@@ -21,19 +21,26 @@ export function MainPage() {
     query: debouncedQuery?.trim() === "" ? undefined : debouncedQuery,
   });
 
-  const userEmail = "test@test.com";
+  const { isLoaded, isSignedIn, user } = useUser();
 
-  const { data: user } = api.users.get.useQuery({ email: userEmail });
+  const userEmail = user?.emailAddresses[0]?.emailAddress;
 
-  console.log("USER:", user);
+  const { data: userObj, isLoading: isUserLoading } = api.users.get.useQuery(
+    { email: userEmail! },
+    {
+      enabled: isLoaded && isSignedIn && !!userEmail,
+    }
+  );
 
-  const { data: entries } = api.list_entries.get_by_user.useQuery({
-    user_id: user?.id ?? 0
-  },{
-    enabled: !!user, // only run this query after user is available
-  });
-
-  console.log("ALL ENTRIES:", entries);
+  const { data: entries, isLoading: isEntriesLoading } =
+    api.list_entries.get_by_user.useQuery(
+      {
+        user_id: userObj?.id ?? 0,
+      },
+      {
+        enabled: !!userObj,
+      }
+    );
 
   return (
     <div className="p-4 max-w-2xl mx-auto w-[60vw] flex flex-col min-h-screen">
@@ -44,6 +51,16 @@ export function MainPage() {
         <SignedIn>
         <UserButton />
       </SignedIn>
+
+      {entries ? 
+      entries.map((entry) => (
+        <div key={entry.entry_id}>
+            <div>{entry.list_name}</div>
+            <div>{entry.school.name}</div>
+        </div>
+      ))
+      
+       : <></>}
       
       <Input
         placeholder="Search schools..."
