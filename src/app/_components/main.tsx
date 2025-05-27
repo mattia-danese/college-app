@@ -46,16 +46,20 @@ export function MainPage() {
     const [selectedLists, setSelectedLists] = useState<Record<number, number>>({}); // school.id => list.id
     const [addingSchoolId, setAddingSchoolId] = useState<number | null>(null);
 
-    const handleAddSchoolToList = async (school_id: number, list_id: number) => {
-    try {
-        setAddingSchoolId(school_id);
-        await createListEntry.mutateAsync({ school_id, list_id });
-        toast.success("School added to list!");
-    } catch (error) {
-        toast.error("Failed to add school.");
-    } finally {
-        setAddingSchoolId(null);
-    }
+    const handleAddSchoolToList = async (school_id: number, list_id: number, schoolName: string) => {
+        try {
+            setAddingSchoolId(school_id);
+            await createListEntry.mutateAsync({ school_id, list_id });
+
+            const list = userLists?.find((l) => l.id === list_id);
+            const listName = list ? list.name : "your list";
+
+            toast.success(`${schoolName} was added to "${listName}"`);
+        } catch (error) {
+            toast.error("Failed to add school.");
+        } finally {
+            setAddingSchoolId(null);
+        }
     };
 
 
@@ -78,7 +82,7 @@ export function MainPage() {
         className="mb-4"
       />
 
-      {isLoading ? (
+      {isListsLoading ? (
         <Spinner />
       ) : schools && schools.length === 0 ? (
         <div className="text-center text-gray-500 mt-8">No results found.</div>
@@ -104,35 +108,35 @@ export function MainPage() {
                     </div>
                     <div># of Supplements: {school.supplementsCount}</div>
                 </div>
-
-                {userLists && (
                 <Select
                     onValueChange={(value) => {
                     const listId = parseInt(value);
                     setSelectedLists((prev) => ({ ...prev, [school.id]: listId }));
-                    handleAddSchoolToList(school.id, listId);
+                    handleAddSchoolToList(school.id, listId, school.name);
                     }}
                     value={selectedLists[school.id]?.toString() || ""}
+                    disabled={addingSchoolId === school.id || isListsLoading}
                 >
-                    <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder="Add to a List" />
+                    <SelectTrigger className="w-[180px]" disabled={addingSchoolId === school.id || isListsLoading}>
+                    <SelectValue placeholder={isListsLoading ? "Loading lists..." : "Add to a List"} />
                     </SelectTrigger>
                     <SelectContent>
-                    <SelectGroup>
-                        <SelectLabel>Your Lists</SelectLabel>
-                        {userLists.map((list) => (
-                        <SelectItem key={list.id} value={list.id.toString()}>
-                            {list.name}
-                        </SelectItem>
-                        ))}
-                    </SelectGroup>
+                        {isListsLoading ? (
+                            <div className="flex justify-center p-4">
+                            <Spinner />
+                            </div>
+                        ) : (
+                            <SelectGroup>
+                            <SelectLabel>Your Lists</SelectLabel>
+                            {userLists?.map((list) => (
+                                <SelectItem key={list.id} value={list.id.toString()}>
+                                {list.name}
+                                </SelectItem>
+                            ))}
+                            </SelectGroup>
+                        )}
                     </SelectContent>
                 </Select>
-                )}
-
-                {addingSchoolId === school.id && (
-                <div className="text-sm text-gray-500 mt-2">Adding...</div>
-                )}
             </CardContent>
         </Card>
       ))
