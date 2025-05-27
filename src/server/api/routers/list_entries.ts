@@ -11,10 +11,12 @@ export const listEntriesRouter = createTRPCRouter({
         school_id: z.number().int().positive(),
     }))
     .mutation(async ({ ctx, input }) => {
-      await ctx.db.insert(list_entries).values({
-        list_id: input.list_id,
-        school_id: input.school_id,
-      });
+        await ctx.db.insert(list_entries)
+        .values({
+            list_id: input.list_id,
+            school_id: input.school_id,
+        })
+        .onConflictDoNothing();
     }),
 
     get: publicProcedure
@@ -45,20 +47,18 @@ export const listEntriesRouter = createTRPCRouter({
     .input(z.object({
         user_id: z.number().int().positive()
     }))
-    .query(({ ctx, input}) => {
+    .query(({ ctx, input }) => {
         return ctx.db
         .select({
-            "user_id": lists.user_id,
-            "list_id": lists.id,
-            "entry_id": list_entries.id,
-            
-            "list_name": lists.name,
-            school: schools,
+            user_id: lists.user_id,
+            list_id: lists.id,
+            entry_id: list_entries.id,
+            list_name: lists.name,
+            school: schools, // This will be null for empty lists
         })
-        .from(list_entries)
-        .innerJoin(lists, eq(list_entries.list_id, lists.id))
-        .innerJoin(schools, eq(list_entries.school_id, schools.id))
-        .where(eq(lists.user_id, input.user_id))
+        .from(lists)
+        .leftJoin(list_entries, eq(list_entries.list_id, lists.id))
+        .leftJoin(schools, eq(list_entries.school_id, schools.id))
+        .where(eq(lists.user_id, input.user_id));
     })
-
 });

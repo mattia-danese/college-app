@@ -1,0 +1,1 @@
+ALTER TABLE "list_entries" ADD CONSTRAINT "list_entries_list_id_school_id_unique" UNIQUE("list_id","school_id");

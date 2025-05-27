@@ -2,7 +2,7 @@
 // https://orm.drizzle.team/docs/sql-schema-declaration
 
 import { sql } from "drizzle-orm";
-import { index, pgTableCreator, decimal, pgEnum, pgTable, serial, timestamp, text } from "drizzle-orm/pg-core";
+import { index, pgTableCreator, decimal, pgEnum, pgTable, serial, timestamp, text, unique } from "drizzle-orm/pg-core";
 
 /**
  * This is an example of how to use the multi-project schema feature of Drizzle ORM. Use the same
@@ -60,7 +60,10 @@ export const list_entries = pgTable('list_entries', (d ) => ({
   school_id: d.integer().notNull().references(() => schools.id, { onDelete: 'cascade' }),
   createdAt: d.timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   updatedAt: d.timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
-}));
+}), 
+(t) => ({
+    listSchoolUnique: unique().on(t.list_id, t.school_id),
+  }));
 
 export const schools = pgTable(
   "schools",

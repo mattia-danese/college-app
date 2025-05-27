@@ -8,6 +8,9 @@ import { api } from "~/trpc/react";
 import { useDebounce } from "./useDebounce";
 import Spinner from "./Spinner";
 import { useUser, SignedIn, SignedOut, SignInButton, SignUpButton, UserButton } from "@clerk/nextjs";
+import { Lists } from "./Lists";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "~/components/ui/select";
+import { toast } from "sonner";
 
 export function MainPage() {
   const [query, setQuery] = useState("");
@@ -32,15 +35,29 @@ export function MainPage() {
     }
   );
 
-  const { data: entries, isLoading: isEntriesLoading } =
-    api.list_entries.get_by_user.useQuery(
-      {
-        user_id: userObj?.id ?? 0,
-      },
-      {
+  const { data: userLists,  isLoading: isListsLoading } = api.lists.get_by_user.useQuery(
+    {
+        user_id: userObj?.id ?? 0
+    }, {
         enabled: !!userObj,
-      }
-    );
+    })
+
+    const createListEntry = api.list_entries.create.useMutation();
+    const [selectedLists, setSelectedLists] = useState<Record<number, number>>({}); // school.id => list.id
+    const [addingSchoolId, setAddingSchoolId] = useState<number | null>(null);
+
+    const handleAddSchoolToList = async (school_id: number, list_id: number) => {
+    try {
+        setAddingSchoolId(school_id);
+        await createListEntry.mutateAsync({ school_id, list_id });
+        toast.success("School added to list!");
+    } catch (error) {
+        toast.error("Failed to add school.");
+    } finally {
+        setAddingSchoolId(null);
+    }
+    };
+
 
   return (
     <div className="p-4 max-w-2xl mx-auto w-[60vw] flex flex-col min-h-screen">
@@ -51,16 +68,6 @@ export function MainPage() {
         <SignedIn>
         <UserButton />
       </SignedIn>
-
-      {entries ? 
-      entries.map((entry) => (
-        <div key={entry.entry_id}>
-            <div>{entry.list_name}</div>
-            <div>{entry.school.name}</div>
-        </div>
-      ))
-      
-       : <></>}
       
       <Input
         placeholder="Search schools..."
@@ -97,10 +104,41 @@ export function MainPage() {
                     </div>
                     <div># of Supplements: {school.supplementsCount}</div>
                 </div>
+
+                {userLists && (
+                <Select
+                    onValueChange={(value) => {
+                    const listId = parseInt(value);
+                    setSelectedLists((prev) => ({ ...prev, [school.id]: listId }));
+                    handleAddSchoolToList(school.id, listId);
+                    }}
+                    value={selectedLists[school.id]?.toString() || ""}
+                >
+                    <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Add to a List" />
+                    </SelectTrigger>
+                    <SelectContent>
+                    <SelectGroup>
+                        <SelectLabel>Your Lists</SelectLabel>
+                        {userLists.map((list) => (
+                        <SelectItem key={list.id} value={list.id.toString()}>
+                            {list.name}
+                        </SelectItem>
+                        ))}
+                    </SelectGroup>
+                    </SelectContent>
+                </Select>
+                )}
+
+                {addingSchoolId === school.id && (
+                <div className="text-sm text-gray-500 mt-2">Adding...</div>
+                )}
             </CardContent>
         </Card>
       ))
     )}
+
+    <Lists />
     </div>
   );
 }
