@@ -1,12 +1,17 @@
 ## To Do
 
-- [ ] User create lists
-- [ ] Add schools to user lists (shadcn combobox)
-- [ ] Display lists
+- [x] User create lists
+- [x] Add schools to user lists (~~combobox~~, select)
+- [x] Display lists
 - [ ] Display calendar
 - [ ] Add calendar events per supplement per school per list
 - [ ] Filter calendar events (i.e. list(s), specific school(s))
-- [ ] Infinite scroll of schools
+- [ ] UI scaffolding
+  - [ ] Home Page, Search Page, My Lists + Calendar (pass auth as props + auth protect pages)
+  - [ ] Nav bar
+- [ ] Tidying up UI
+  - [ ] Infinite scroll of schools in search
+  - [ ] TBD
 - [ ] Google Calendar & Apple Calendar integration
 - [ ] Deploy
 - [ ] Create scraper
