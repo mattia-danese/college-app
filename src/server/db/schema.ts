@@ -2,7 +2,7 @@
 // https://orm.drizzle.team/docs/sql-schema-declaration
 
 import { sql } from "drizzle-orm";
-import { index, pgTableCreator, decimal, pgEnum, pgTable, serial, timestamp, text, unique } from "drizzle-orm/pg-core";
+import { index, pgTableCreator, decimal, pgEnum, pgTable, serial, timestamp, text, unique, uniqueIndex } from "drizzle-orm/pg-core";
 
 /**
  * This is an example of how to use the multi-project schema feature of Drizzle ORM. Use the same
@@ -96,8 +96,8 @@ export const deadlines = pgTable(
   (d) => ({
     id: d.integer().primaryKey().generatedByDefaultAsIdentity(),
     school_id: d.integer().notNull().references(() => schools.id, { onDelete: 'cascade' }),
-    appication_type: applicationTypeEnum(),
-    date: d.date().notNull(),
+    application_type: applicationTypeEnum(),
+    date: d.date().notNull().$type<Date>(),
     createdAt: d
       .timestamp({ withTimezone: true })
       .default(sql`CURRENT_TIMESTAMP`)
@@ -123,3 +123,49 @@ export const supplements = pgTable(
   }),
 //   (t) => [index("deadlines_school_id_idx").on(t.school_id)],
 );
+
+export const calendar_events = pgTable(
+  "calendar_events",
+  (d) => ({
+    id: d.integer().primaryKey().generatedByDefaultAsIdentity(),
+    user_id: d
+      .integer()
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    supplement_id: d
+      .integer()
+      .references(() => supplements.id, { onDelete: "cascade" }),
+    deadline_id: d
+      .integer()
+      .references(() => deadlines.id, { onDelete: "cascade" }),
+    title: d.varchar({ length: 256 }).notNull(),
+    description: d.text(),
+    start: d.timestamp({ withTimezone: true }).notNull(),
+    end: d.timestamp({ withTimezone: true }).notNull(),
+    createdAt: d
+      .timestamp({ withTimezone: true })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    updatedAt: d.timestamp({ withTimezone: true }).$onUpdate(() => new Date()),
+  }),
+  (t) => [
+    // Enforce that either supplement_id OR deadline_id is set (optional, DB-level check can be done with triggers or partial indexes)
+    // But this can't be done with Drizzle directly; you can add app-level validation.
+
+    // Example indexes:
+    // index("calendar_events_user_id_idx").on(t.user_id),
+    // index("calendar_events_supplement_id_idx").on(t.supplement_id),
+    // index("calendar_events_deadline_id_idx").on(t.deadline_id),
+
+    // Unique per user + supplement
+    uniqueIndex("unique_user_supplement_event")
+      .on(t.user_id, t.supplement_id)
+      .where(sql`${t.supplement_id} IS NOT NULL`),
+
+    // Unique per user + deadline
+    uniqueIndex("unique_user_deadline_event")
+      .on(t.user_id, t.deadline_id)
+      .where(sql`${t.deadline_id} IS NOT NULL`),
+  ],
+);
+

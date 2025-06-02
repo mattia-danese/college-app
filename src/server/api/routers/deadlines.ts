@@ -7,7 +7,7 @@ export const deadlinesRouter = createTRPCRouter({
   create: publicProcedure
     .input(z.object({
         school_id: z.number().int().positive(), 
-        appication_type: z.enum(["RD", "EA", "ED", "ED2"]),
+        application_type: z.enum(["RD", "EA", "ED", "ED2"]),
         date: z.string().refine(val => !isNaN(Date.parse(val)), {
             message: "Invalid date format"
         })
@@ -15,8 +15,8 @@ export const deadlinesRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       await ctx.db.insert(deadlines).values({
         school_id: input.school_id,
-        appication_type: input.appication_type,
-        date: input.date,
+        application_type: input.application_type,
+        date: new Date(input.date)
       });
     }),
 });

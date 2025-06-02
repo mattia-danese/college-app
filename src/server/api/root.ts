@@ -7,6 +7,7 @@ import { supplementsRouter } from "./routers/supplements";
 import { usersRouter } from "./routers/users";
 import { listsRouter } from "./routers/lists";
 import { listEntriesRouter } from "./routers/list_entries";
+import { calendarEventsRouter } from "./routers/calendar_events";
 
 /**
  * This is the primary router for your server.
@@ -20,7 +21,8 @@ export const appRouter = createTRPCRouter({
   supplements: supplementsRouter,
   users: usersRouter,
   lists: listsRouter,
-  list_entries: listEntriesRouter
+  list_entries: listEntriesRouter,
+  calendar_events: calendarEventsRouter,
 });
 
 // export type definition of API

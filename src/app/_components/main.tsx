@@ -12,6 +12,10 @@ import { Lists } from "./Lists";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { toast } from "sonner";
 
+import CalendarApp from "./Calendar";
+import type { CalendarEventExternal } from "@schedule-x/calendar";
+import { format, isEqual } from 'date-fns';
+
 export function MainPage() {
   const [query, setQuery] = useState("");
   const [currentOffset, setCurrentOffset] = useState(0);
@@ -62,8 +66,27 @@ export function MainPage() {
         }
     };
 
+    const { data: calendarEvents,  isLoading: isCalendarEventsLoading } = api.calendar_events.get_by_user.useQuery(
+    {
+        user_id: userObj?.id ?? 0
+    }, {
+        enabled: !!userObj,
+    })
+
+    const calendarEventsToDisplay: CalendarEventExternal[] = (calendarEvents ?? []).map((event) => ({
+        id: event.event_id,
+        title: event.event_title,
+        start: isEqual(event.event_start, event.event_end) ? 
+            format(event.event_start, 'yyyy-MM-dd') : 
+            format(event.event_start, 'yyyy-MM-dd HH:mm'),
+        end: isEqual(event.event_start, event.event_end) ? 
+            format(event.event_end, 'yyyy-MM-dd') : 
+            format(event.event_end, 'yyyy-MM-dd HH:mm'),
+        description: event.event_description ?? undefined,
+    }))
 
   return (
+    <div>
     <div className="p-4 max-w-2xl mx-auto w-[60vw] flex flex-col min-h-screen">
       <SignedOut>
         <SignInButton />
@@ -102,7 +125,7 @@ export function MainPage() {
                         Deadlines:{" "}
                         {school.deadlines.map((deadline) => (
                             <div key={deadline.id}>
-                                {deadline.appication_type} - {new Date(deadline.date).toLocaleDateString()}
+                                {deadline.application_type} - {new Date(deadline.date).toLocaleDateString()}
                             </div>
                         ))}
                     </div>
@@ -141,8 +164,11 @@ export function MainPage() {
         </Card>
       ))
     )}
+    </div>
 
     <Lists />
+
+    {userObj?.id && <CalendarApp userId={userObj.id} events={calendarEventsToDisplay} />}
     </div>
   );
 }

@@ -1,0 +1,1 @@
+ALTER TABLE "deadlines" RENAME COLUMN "appication_type" TO "application_type";

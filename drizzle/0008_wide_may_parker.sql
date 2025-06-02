@@ -1,0 +1,2 @@
+CREATE UNIQUE INDEX "unique_user_supplement_event" ON "calendar_events" USING btree ("user_id","supplement_id") WHERE "calendar_events"."supplement_id" IS NOT NULL;--> statement-breakpoint
+CREATE UNIQUE INDEX "unique_user_deadline_event" ON "calendar_events" USING btree ("user_id","deadline_id") WHERE "calendar_events"."deadline_id" IS NOT NULL;

@@ -3,7 +3,7 @@
 - [x] User create lists
 - [x] Add schools to user lists (~~combobox~~, select)
 - [x] Display lists
-- [ ] Display calendar
+- [x] Display calendar and fetch user events
 - [ ] Add calendar events per supplement per school per list
 - [ ] Filter calendar events (i.e. list(s), specific school(s))
 - [ ] UI scaffolding
