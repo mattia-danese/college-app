@@ -1,13 +1,13 @@
-import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
+import { createCallerFactory, createTRPCRouter } from '~/server/api/trpc';
 
-import { postRouter } from "~/server/api/routers/post";
-import { schoolsRouter } from "./routers/schools";
-import { deadlinesRouter } from "./routers/deadlines";
-import { supplementsRouter } from "./routers/supplements";
-import { usersRouter } from "./routers/users";
-import { listsRouter } from "./routers/lists";
-import { listEntriesRouter } from "./routers/list_entries";
-import { calendarEventsRouter } from "./routers/calendar_events";
+import { postRouter } from '~/server/api/routers/post';
+import { schoolsRouter } from './routers/schools';
+import { deadlinesRouter } from './routers/deadlines';
+import { supplementsRouter } from './routers/supplements';
+import { usersRouter } from './routers/users';
+import { listsRouter } from './routers/lists';
+import { listEntriesRouter } from './routers/list_entries';
+import { calendarEventsRouter } from './routers/calendar_events';
 
 /**
  * This is the primary router for your server.

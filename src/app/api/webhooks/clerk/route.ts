@@ -1,7 +1,7 @@
-import { NextRequest } from "next/server";
-import { verifyWebhook } from '@clerk/nextjs/webhooks'
-import { createTRPCContext } from "~/server/api/trpc";
-import { createCaller } from "~/server/api/root";
+import { NextRequest } from 'next/server';
+import { verifyWebhook } from '@clerk/nextjs/webhooks';
+import { createTRPCContext } from '~/server/api/trpc';
+import { createCaller } from '~/server/api/root';
 
 export async function POST(req: NextRequest) {
   try {
@@ -11,53 +11,72 @@ export async function POST(req: NextRequest) {
     const caller = createCaller(ctx);
 
     switch (evt.type) {
-        case "user.created": {
-            const user = evt.data;
+      case 'user.created': {
+        const user = evt.data;
 
-            const name = user.first_name && user.last_name ? `${user.first_name} ${user.last_name}` : null;
-            const email = user.email_addresses?.[0]?.email_address ?? null;
+        const name =
+          user.first_name && user.last_name
+            ? `${user.first_name} ${user.last_name}`
+            : null;
+        const email = user.email_addresses?.[0]?.email_address ?? null;
 
-            if (!name || !email) { console.warn('Skipping user.created webhook due to missing name or email'); break; }
-
-            await caller.users.create({
-                name: name,
-                email: email,
-                clerk_id: user.id,
-            });
-            break;
+        if (!name || !email) {
+          console.warn(
+            'Skipping user.created webhook due to missing name or email',
+          );
+          break;
         }
 
-        case "user.updated": {
-            const user = evt.data;
+        await caller.users.create({
+          name: name,
+          email: email,
+          clerk_id: user.id,
+        });
+        break;
+      }
 
-            const name = user.first_name && user.last_name ? `${user.first_name} ${user.last_name}` : null;
-            const email = user.email_addresses?.[0]?.email_address ?? null;
+      case 'user.updated': {
+        const user = evt.data;
 
-            if (!name || !email) { console.warn('Skipping user.updated webhook due to empty name or email'); break; }
+        const name =
+          user.first_name && user.last_name
+            ? `${user.first_name} ${user.last_name}`
+            : null;
+        const email = user.email_addresses?.[0]?.email_address ?? null;
 
-            await caller.users.update({
-                clerk_id: user.id,
-                data: {
-                    name: name,
-                    email: email,
-                },
-            });
-            break;
+        if (!name || !email) {
+          console.warn(
+            'Skipping user.updated webhook due to empty name or email',
+          );
+          break;
         }
 
-        case "user.deleted": {
-            const user = evt.data;
+        await caller.users.update({
+          clerk_id: user.id,
+          data: {
+            name: name,
+            email: email,
+          },
+        });
+        break;
+      }
 
-            if (!user.id) { console.warn("user.deleted webhook received without an ID"); break; }
+      case 'user.deleted': {
+        const user = evt.data;
 
-            await caller.users.delete({ clerk_id: user.id });
-            break;
+        if (!user.id) {
+          console.warn('user.deleted webhook received without an ID');
+          break;
         }
+
+        await caller.users.delete({ clerk_id: user.id });
+        break;
+      }
     }
 
-    return new Response('Webhook received', { status: 200 })
+    return new Response('Webhook received', { status: 200 });
   } catch (err) {
-    console.error('Error verifying webhook:', err)
-    return new Response('Error verifying webhook', { status: 400 })
+    console.error('Error verifying webhook:', err);
+    return new Response('Error verifying webhook', { status: 400 });
   }
 }

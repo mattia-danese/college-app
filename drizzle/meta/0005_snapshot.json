@@ -64,12 +64,8 @@
           "name": "deadlines_school_id_schools_id_fk",
           "tableFrom": "deadlines",
           "tableTo": "schools",
-          "columnsFrom": [
-            "school_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["school_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -134,12 +130,8 @@
           "name": "list_entries_list_id_lists_id_fk",
           "tableFrom": "list_entries",
           "tableTo": "lists",
-          "columnsFrom": [
-            "list_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["list_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -147,12 +139,8 @@
           "name": "list_entries_school_id_schools_id_fk",
           "tableFrom": "list_entries",
           "tableTo": "schools",
-          "columnsFrom": [
-            "school_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["school_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -162,10 +150,7 @@
         "list_entries_list_id_school_id_unique": {
           "name": "list_entries_list_id_school_id_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "list_id",
-            "school_id"
-          ]
+          "columns": ["list_id", "school_id"]
         }
       },
       "policies": {},
@@ -226,12 +211,8 @@
           "name": "lists_user_id_users_id_fk",
           "tableFrom": "lists",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -467,12 +448,8 @@
           "name": "supplements_school_id_schools_id_fk",
           "tableFrom": "supplements",
           "tableTo": "schools",
-          "columnsFrom": [
-            "school_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["school_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -580,16 +557,12 @@
         "users_email_unique": {
           "name": "users_email_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "email"
-          ]
+          "columns": ["email"]
         },
         "users_clerk_id_unique": {
           "name": "users_clerk_id_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "clerk_id"
-          ]
+          "columns": ["clerk_id"]
         }
       },
       "policies": {},
@@ -601,12 +574,7 @@
     "public.application_type_enum": {
       "name": "application_type_enum",
       "schema": "public",
-      "values": [
-        "RD",
-        "EA",
-        "ED",
-        "ED2"
-      ]
+      "values": ["RD", "EA", "ED", "ED2"]
     }
   },
   "schemas": {},

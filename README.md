@@ -5,21 +5,24 @@
 - [x] Display lists
 - [x] Display calendar and fetch user events
 - [ ] Add calendar events per supplement per school per list
-- [ ] Filter calendar events (i.e. list(s), specific school(s))
+  - [ ] Make new table for supplement <-> calender event mapping (user id, supplement id, has event, event id)
+  - [ ] Get all for user and use to see which supplements do not have event (diplay them)
+  - [ ] Update table on create/delete calendar event action
+- [x] Filter calendar events by list
 - [ ] Create dashboard of all required supplements
   - [ ] heading (# of schools in each list, x/y supplements completed)
   - [ ] school name, app type, deadline, supplement title, scheduled to complete by, status [Completed, In Progress, Planned]
   - [ ] add filtering based on list and school name (search box like main page)
-- [ ] UI scaffolding
-  - [ ] Home Page, Search Page, My Lists + Calendar (pass auth as props + auth protect pages)
-  - [ ] Nav bar
-- [ ] Tidying up UI
+- [x] UI scaffolding
+  - [x] Home Page, Search Page, My Lists + Calendar (pass auth as props + auth protect pages)
+  - [x] Nav bar
+- [ ] Tidying up UI + Extras
   - [ ] Infinite scroll of schools in search
+  - [ ] Filter calendar events by school
   - [ ] TBD
 - [ ] Google Calendar & Apple Calendar integration
 - [ ] Deploy
 - [ ] Create scraper
-
 
 ## How do I deploy this?
 
