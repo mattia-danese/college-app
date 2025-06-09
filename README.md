@@ -4,10 +4,7 @@
 - [x] Add schools to user lists (~~combobox~~, select)
 - [x] Display lists
 - [x] Display calendar and fetch user events
-- [ ] Add calendar events per supplement per school per list
-  - [ ] Make new table for supplement <-> calender event mapping (user id, supplement id, has event, event id)
-  - [ ] Get all for user and use to see which supplements do not have event (diplay them)
-  - [ ] Update table on create/delete calendar event action
+- [x] Add calendar events per supplement per school per list
 - [x] Filter calendar events by list
 - [ ] Create dashboard of all required supplements
   - [ ] heading (# of schools in each list, x/y supplements completed)

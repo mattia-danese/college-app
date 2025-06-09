@@ -1,6 +1,7 @@
 'use client';
 
 import Calendar from './Calendar';
+import CalendarCompanion from './CalendarCompanion';
 import { useEffect, useState } from 'react';
 import { Checkbox } from '~/components/ui/checkbox';
 import { api } from '~/trpc/react';
@@ -12,6 +13,8 @@ import { format, isEqual } from 'date-fns';
 import { useUserStore } from '~/stores/useUserStore';
 
 export default function CalendarPage() {
+  const [selectedListIds, setSelectedListIds] = useState<number[]>([]);
+
   const user = useUserStore((s) => s.user);
 
   const { data: userLists = [], isLoading: isListsLoading } =
@@ -24,17 +27,31 @@ export default function CalendarPage() {
       },
     );
 
-  const { data: calendarEvents, isLoading: isCalendarEventsLoading } =
-    api.calendar_events.get_by_user.useQuery(
-      {
-        user_id: user?.id ?? 0,
-      },
-      {
-        enabled: !!user?.id,
-      },
-    );
+  const {
+    data: calendarEvents,
+    isLoading: isCalendarEventsLoading,
+    refetch: refetchCalendarEvents,
+  } = api.calendar_events.get_by_user.useQuery(
+    {
+      user_id: user?.id ?? 0,
+    },
+    {
+      enabled: !!user?.id,
+    },
+  );
 
-  const [selectedListIds, setSelectedListIds] = useState<number[]>([]);
+  const {
+    data: supplementsWithoutEvents = {},
+    isLoading: isSupplementsWithoutEvents,
+    refetch: refetchSupplements,
+  } = api.calendar_events.get_supplements_without_events_by_user.useQuery(
+    {
+      user_id: user?.id ?? 0,
+    },
+    {
+      enabled: !!user?.id,
+    },
+  );
 
   // Set all as selected when lists load
   useEffect(() => {
@@ -57,6 +74,16 @@ export default function CalendarPage() {
         description: event.event_description ?? undefined,
       })),
     );
+
+  const supplementsToDisplay: (typeof supplementsWithoutEvents)[number] = {};
+
+  selectedListIds.forEach((list_id) => {
+    const schoolMap = supplementsWithoutEvents[list_id];
+    if (!schoolMap) return;
+    Object.values(schoolMap).forEach((school) => {
+      supplementsToDisplay[school.school_id] = school;
+    });
+  });
 
   const handleCheckboxChange = (
     listId: number,
@@ -94,6 +121,15 @@ export default function CalendarPage() {
           </div>
         ))}
       </div>
+
+      <CalendarCompanion
+        userId={user.id}
+        supplements={supplementsToDisplay}
+        onEventChange={async () => {
+          await refetchSupplements();
+          await refetchCalendarEvents();
+        }}
+      />
 
       <Calendar userId={user.id} events={calendarEventsToDisplay} />
     </div>

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { eq, inArray, or } from 'drizzle-orm';
+import { eq, inArray, or, and, isNull } from 'drizzle-orm';
 
 import { createTRPCRouter, publicProcedure } from '~/server/api/trpc';
 import {
@@ -34,8 +34,8 @@ export const calendarEventsRouter = createTRPCRouter({
             path: ['supplement_id'], // Could also target both or `["_form"]`
           },
         )
-        .refine((data) => data.start < data.end, {
-          message: 'Start time must be before end time',
+        .refine((data) => data.start <= data.end, {
+          message: 'Start time must be equal or before end time',
           path: ['start'],
         }),
     )
@@ -128,6 +128,101 @@ export const calendarEventsRouter = createTRPCRouter({
           event_end: record.event_end,
           supplement_id: record.supplement_id,
           deadline_id: record.deadline_id,
+        });
+      }
+
+      return grouped;
+    }),
+
+  get_supplements_without_events_by_user: publicProcedure
+    .input(
+      z.object({
+        user_id: z.number().int().positive(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const records = await ctx.db
+        .select({
+          list_id: lists.id,
+
+          school_id: schools.id,
+          school_name: schools.name,
+
+          supplement_id: supplements.id,
+          supplement_prompt: supplements.prompt,
+          supplement_description: supplements.description,
+          supplement_word_count: supplements.word_count,
+
+          deadline_id: deadlines.id,
+          deadline_application_type: deadlines.application_type,
+          deadline_date: deadlines.date,
+        })
+        .from(lists)
+        .innerJoin(list_entries, eq(list_entries.list_id, lists.id))
+        .innerJoin(schools, eq(list_entries.school_id, schools.id))
+        .innerJoin(deadlines, eq(schools.id, deadlines.school_id))
+        .innerJoin(supplements, eq(schools.id, supplements.school_id))
+        .leftJoin(
+          calendar_events,
+          and(
+            eq(calendar_events.user_id, input.user_id),
+            eq(calendar_events.supplement_id, supplements.id),
+          ),
+        )
+        .where(
+          and(
+            eq(lists.user_id, input.user_id),
+            isNull(calendar_events.id), // <-- Only supplements with NO event for this user
+          ),
+        );
+
+      const grouped: Record<
+        number, // list_id
+        Record<
+          number, // school_id
+          {
+            school_id: number;
+            school_name: string;
+            supplements: {
+              supplement_id: number;
+              supplement_prompt: string;
+              supplement_description: string;
+              supplement_word_count: string;
+            }[];
+            deadlines: {
+              deadline_id: number;
+              deadline_application_type: string;
+              deadline_date: Date;
+            }[];
+          }
+        >
+      > = {};
+
+      for (const record of records) {
+        if (!grouped[record.list_id]) {
+          grouped[record.list_id] = {};
+        }
+
+        if (!grouped[record.list_id]![record.school_id]) {
+          grouped[record.list_id]![record.school_id] = {
+            school_id: record.school_id,
+            school_name: record.school_name,
+            supplements: [],
+            deadlines: [],
+          };
+        }
+
+        grouped[record.list_id]![record.school_id]!.supplements.push({
+          supplement_id: record.supplement_id,
+          supplement_prompt: record.supplement_prompt,
+          supplement_description: record.supplement_description,
+          supplement_word_count: record.supplement_word_count,
+        });
+
+        grouped[record.list_id]![record.school_id]!.deadlines.push({
+          deadline_id: record.deadline_id,
+          deadline_application_type: record.deadline_application_type!,
+          deadline_date: record.deadline_date,
         });
       }
 
