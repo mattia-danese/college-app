@@ -2,7 +2,7 @@
 
 import Calendar from './Calendar';
 import CalendarCompanion from './CalendarCompanion';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Checkbox } from '~/components/ui/checkbox';
 import { api } from '~/trpc/react';
 import { Label } from '~/components/ui/label';
@@ -12,7 +12,7 @@ import { format, isEqual } from 'date-fns';
 
 import { useUserStore } from '~/stores/useUserStore';
 
-export default function CalendarPage() {
+export default function CalendarClient() {
   const [selectedListIds, setSelectedListIds] = useState<number[]>([]);
 
   const user = useUserStore((s) => s.user);
@@ -75,15 +75,19 @@ export default function CalendarPage() {
       })),
     );
 
-  const supplementsToDisplay: (typeof supplementsWithoutEvents)[number] = {};
+  const supplementsToDisplay = useMemo(() => {
+    const result: (typeof supplementsWithoutEvents)[number] = {};
 
-  selectedListIds.forEach((list_id) => {
-    const schoolMap = supplementsWithoutEvents[list_id];
-    if (!schoolMap) return;
-    Object.values(schoolMap).forEach((school) => {
-      supplementsToDisplay[school.school_id] = school;
+    selectedListIds.forEach((list_id) => {
+      const schoolMap = supplementsWithoutEvents[list_id];
+      if (!schoolMap) return;
+      Object.values(schoolMap).forEach((school) => {
+        result[school.school_id] = school;
+      });
     });
-  });
+
+    return result;
+  }, [selectedListIds, supplementsWithoutEvents]);
 
   const handleCheckboxChange = (
     listId: number,

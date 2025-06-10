@@ -1,12 +1,21 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader } from '~/components/ui/card';
 import { Button } from '~/components/ui/button';
 import { Input } from '~/components/ui/input';
 import { Textarea } from '~/components/ui/textarea';
 import { Label } from '~/components/ui/label';
 import { api } from '~/trpc/react';
+import { toast } from 'sonner';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+  type CarouselApi,
+} from '~/components/ui/carousel';
 
 type supplement = {
   supplement_id: number;
@@ -22,9 +31,7 @@ type CalendarCompanionProps = {
     {
       school_id: number;
       school_name: string;
-
       supplements: supplement[];
-
       deadlines: {
         deadline_id: number;
         deadline_application_type: string;
@@ -35,18 +42,40 @@ type CalendarCompanionProps = {
   onEventChange: Function;
 };
 
-type SupplementCardProps = {
-  userId: number;
-  schoolName: string;
-  supplement: supplement;
-  onEventCreated: Function;
-};
+// Custom hook to handle carousel API
+function useCarouselApi() {
+  const [api, setApi] = useState<CarouselApi>();
+  const [current, setCurrent] = useState(0);
+
+  const handleApiChange = useCallback((newApi: CarouselApi) => {
+    setApi(newApi);
+  }, []);
+
+  useEffect(() => {
+    if (!api) return;
+
+    const updateCurrent = () => {
+      setCurrent(api.selectedScrollSnap());
+    };
+
+    updateCurrent();
+    api.on('select', updateCurrent);
+
+    return () => {
+      api.off('select', updateCurrent);
+    };
+  }, [api]);
+
+  return { api, current, setApi: handleApiChange };
+}
 
 export default function CalendarCompanion({
   userId,
   supplements,
   onEventChange,
 }: CalendarCompanionProps) {
+  const { api, current, setApi } = useCarouselApi();
+
   const isEmpty =
     !supplements ||
     Object.keys(supplements).length === 0 ||
@@ -63,10 +92,19 @@ export default function CalendarCompanion({
     );
   }
 
-  const totalSupplements = Object.values(supplements).reduce(
-    (sum, school) => sum + school.supplements.length,
-    0,
+  // Flatten supplements for carousel
+  const supplementList: {
+    schoolName: string;
+    supplement: supplement;
+  }[] = Object.values(supplements).flatMap((school) =>
+    school.supplements.map((supplement) => ({
+      schoolName: school.school_name,
+      supplement,
+    })),
   );
+
+  const totalSupplements = supplementList.length;
+  const activeSupplement = supplementList[current];
 
   return (
     <div>
@@ -80,52 +118,87 @@ export default function CalendarCompanion({
           Create events for these supplements to keep your calendar up to date!
         </div>
       </div>
-      <div className="grid gap-4">
-        {Object.values(supplements).flatMap((school) =>
-          school.supplements.map((supplement) => (
-            <SupplementCard
-              key={supplement.supplement_id}
-              userId={userId}
-              supplement={supplement}
-              schoolName={school.school_name}
-              onEventCreated={onEventChange}
-            />
-          )),
-        )}
-      </div>
+
+      <Carousel
+        opts={{ align: 'center', loop: true }}
+        setApi={setApi}
+        className="w-full max-w-xl mx-auto mb-8"
+      >
+        <CarouselContent>
+          {supplementList.map(({ schoolName, supplement }) => (
+            <CarouselItem key={supplement.supplement_id} className="p-1">
+              <Card>
+                <CardHeader>
+                  <div className="font-bold">{schoolName}</div>
+                  <div className="text-lg">{supplement.supplement_prompt}</div>
+                  <div className="text-sm text-muted-foreground">
+                    {supplement.supplement_description}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    Word Count: {supplement.supplement_word_count}
+                  </div>
+                </CardHeader>
+              </Card>
+            </CarouselItem>
+          ))}
+        </CarouselContent>
+        <CarouselPrevious />
+        <CarouselNext />
+      </Carousel>
+
+      {activeSupplement && (
+        <SupplementEventForm
+          key={activeSupplement.supplement.supplement_id}
+          userId={userId}
+          schoolName={activeSupplement.schoolName}
+          supplement={activeSupplement.supplement}
+          onEventCreated={onEventChange}
+        />
+      )}
     </div>
   );
 }
 
-function SupplementCard({
+type SupplementEventFormProps = {
+  userId: number;
+  schoolName: string;
+  supplement: supplement;
+  onEventCreated: Function;
+};
+
+function SupplementEventForm({
   userId,
   supplement,
   schoolName,
   onEventCreated,
-}: SupplementCardProps) {
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
+}: SupplementEventFormProps) {
+  const initialDescription =
+    `Prompt: ${supplement.supplement_prompt}\n\n` +
+    `Description: ${supplement.supplement_description}\n\n` +
+    `Word Count: ${supplement.supplement_word_count}\n`;
+
+  const initialTitle = `${schoolName} Supplement`;
+
+  const [title, setTitle] = useState(initialTitle);
+  const [description, setDescription] = useState(initialDescription);
   const [start, setStart] = useState<Date>(() => new Date());
   const [end, setEnd] = useState<Date>(() => new Date());
 
   const createEvent = api.calendar_events.create.useMutation({
     onSuccess: () => {
       onEventCreated?.();
+      setTitle('');
+      setDescription('');
+      setStart(new Date());
+      setEnd(new Date());
+      toast.success('Event created successfully');
     },
   });
 
-  const textAreaPlaceHolder =
-    `Prompt: ${supplement.supplement_prompt}\n\n` +
-    `Description: ${supplement.supplement_description}\n\n` +
-    `Word Count: ${supplement.supplement_word_count}\n`;
   return (
-    <Card>
+    <Card className="w-full max-w-xl mx-auto">
       <CardHeader>
-        <div className="font-bold">{schoolName}</div>
-        <div className="text-lg">{supplement.supplement_prompt}</div>
-        <div className="text-sm text-muted-foreground">
-          {supplement.supplement_description}
-        </div>
+        <div className="text-xl font-semibold">Create Calendar Event</div>
       </CardHeader>
       <CardContent>
         <div className="mb-4">
@@ -179,8 +252,8 @@ function SupplementCard({
           </Label>
           <Textarea
             id={`desc-${supplement.supplement_id}`}
-            defaultValue={textAreaPlaceHolder}
-            rows={textAreaPlaceHolder.split('\n').length}
+            value={description}
+            rows={initialDescription.split('\n').length}
             onChange={(e) => setDescription(e.target.value)}
           />
         </div>
