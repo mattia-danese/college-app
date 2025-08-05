@@ -25,7 +25,7 @@ export type DashboardSupplementRow = {
   deadline: Date;
   supplement_title: string;
   complete_by: Date;
-  status: 'Completed' | 'In Progress' | 'Planned';
+  status: 'Completed' | 'In Progress' | 'Planned' | 'Not Planned';
 };
 
 export const columns: ColumnDef<DashboardSupplementRow>[] = [
