@@ -27,7 +27,7 @@ import { MultiCombobox } from '~/components/ui/combobox';
 import { useState, useMemo } from 'react';
 import { X } from 'lucide-react';
 
-import type { Status } from './DashboardColumns';
+import type { Status } from './SupplementsDashboardColumns';
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -35,7 +35,7 @@ interface DataTableProps<TData, TValue> {
   listOptions: { value: string; label: string }[];
 }
 
-export function DashboardDataTable<TData, TValue>({
+export function SupplementsDashboardDataTable<TData, TValue>({
   columns,
   data,
   listOptions,
@@ -128,28 +128,8 @@ export function DashboardDataTable<TData, TValue>({
     table.getColumn('school_name')?.setFilterValue('');
   };
 
-  // Calculate statistics
-  const totalSchools = new Set(data.map((item: any) => item.school_name)).size;
-  const totalSupplements = data.length;
-  const completedSupplements = data.filter(
-    (item: any) => item.status === 'Completed',
-  ).length;
-
   return (
     <div>
-      <div className="mb-6 p-6 bg-gradient-to-r from-muted/50 to-accent/30 rounded-lg border border-border">
-        <h2 className="text-xl font-semibold text-foreground">
-          You are applying to{' '}
-          <span className="text-primary font-bold">{totalSchools}</span>{' '}
-          schools! You have completed{' '}
-          <span className="text-chart-2 font-bold">{completedSupplements}</span>{' '}
-          /{' '}
-          <span className="text-muted-foreground font-bold">
-            {totalSupplements}
-          </span>{' '}
-          supplements!
-        </h2>
-      </div>
       <div className="flex items-center gap-4 py-4">
         <Input
           placeholder="Filter by school name..."

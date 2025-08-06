@@ -6,7 +6,7 @@
 - [x] Display calendar and fetch user events
 - [x] Add calendar events per supplement per school per list
 - [x] Filter calendar events by list
-- [ ] Create dashboard of all required supplements
+- [ ] Create supplements dashboard
   - [x] heading (# of schools in each list, x/y supplements completed)
   - [x] school name, app type, deadline, supplement title, scheduled to complete by, status [Completed, In Progress, Planned]
   - [x] add filtering based school name (search box like main page)
@@ -14,6 +14,8 @@
   - [x] handle supplement title overflow (possibly school too)
   - [ ] ~~add dialog or hover card over supplement title and display all supplement information~~
   - [ ] potentially make Complete By field date picker (will update exisitng event for supplement or create a new one with new date)
+- [ ] Create schools dashboard
+  - [x] school name, list, app type, deadline, # supplements
   - [ ] make list cell a select field that populates with list of supplement and makes API to update and change list upon different selection
 - [x] UI scaffolding
   - [x] Home Page, Search Page, My Lists + Calendar (pass auth as props + auth protect pages)

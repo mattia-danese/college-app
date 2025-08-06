@@ -2,7 +2,13 @@ import { eq, ilike, inArray, sql } from 'drizzle-orm';
 import { z } from 'zod';
 
 import { createTRPCRouter, publicProcedure } from '~/server/api/trpc';
-import { schools, deadlines, supplements } from '~/server/db/schema';
+import {
+  schools,
+  deadlines,
+  supplements,
+  list_entries,
+  lists,
+} from '~/server/db/schema';
 
 import type { InferSelectModel } from 'drizzle-orm';
 
@@ -88,5 +94,45 @@ export const schoolsRouter = createTRPCRouter({
       }));
 
       return records;
+    }),
+
+  get_schools_dashboard_data: publicProcedure
+    .input(
+      z.object({
+        user_id: z.number().int().positive(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const records = await ctx.db
+        .select({
+          school_id: schools.id,
+          school_name: schools.name,
+          list_name: lists.name,
+          application_type: deadlines.application_type,
+          deadline_date: deadlines.date,
+          num_supplements: sql<number>`count(${supplements.id})`,
+        })
+        .from(supplements)
+        .innerJoin(schools, eq(schools.id, supplements.school_id))
+        .innerJoin(list_entries, eq(list_entries.school_id, schools.id))
+        .innerJoin(lists, eq(lists.id, list_entries.list_id))
+        .innerJoin(deadlines, eq(deadlines.school_id, schools.id))
+        .where(eq(lists.user_id, input.user_id))
+        .groupBy(
+          schools.id,
+          schools.name,
+          lists.name,
+          deadlines.application_type,
+          deadlines.date,
+        );
+
+      return records.map((record) => ({
+        id: record.school_id.toString(),
+        school_name: record.school_name,
+        list_name: record.list_name,
+        application_type: record.application_type as 'RD' | 'EA' | 'ED' | 'ED2',
+        deadline: record.deadline_date,
+        num_supplements: record.num_supplements,
+      }));
     }),
 });

@@ -20,7 +20,7 @@ import { format } from 'date-fns';
 
 export type Status = 'Completed' | 'In Progress' | 'Planned' | 'Not Planned';
 
-export type DashboardSupplementRow = {
+export type SupplementsDashboardRow = {
   id: string;
   school_name: string;
   list_name: string;
@@ -31,7 +31,7 @@ export type DashboardSupplementRow = {
   status: Status;
 };
 
-export const columns: ColumnDef<DashboardSupplementRow>[] = [
+export const columns: ColumnDef<SupplementsDashboardRow>[] = [
   {
     accessorKey: 'school_name',
     header: ({ column }) => {

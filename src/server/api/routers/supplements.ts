@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { eq, inArray } from 'drizzle-orm';
+import { eq, inArray, sql } from 'drizzle-orm';
 
 import { createTRPCRouter, publicProcedure } from '~/server/api/trpc';
 import {
@@ -136,7 +136,7 @@ export const supplementsRouter = createTRPCRouter({
       return result;
     }),
 
-  get_dashboard_data: publicProcedure
+  get_supplements_dashboard_data: publicProcedure
     .input(
       z.object({
         user_id: z.number().int().positive(),
