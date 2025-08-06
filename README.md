@@ -7,21 +7,30 @@
 - [x] Add calendar events per supplement per school per list
 - [x] Filter calendar events by list
 - [ ] Create dashboard of all required supplements
-  - [ ] heading (# of schools in each list, x/y supplements completed)
+  - [x] heading (# of schools in each list, x/y supplements completed)
   - [x] school name, app type, deadline, supplement title, scheduled to complete by, status [Completed, In Progress, Planned]
   - [x] add filtering based school name (search box like main page)
-  - [ ] add combobox for filteirng by list
-  - [ ] handle supplement title overflow (possibly school too)
-  - [ ] add dialog or hover card over supplement title and display all supplement information
+  - [x] add combobox for filteirng by list
+  - [x] handle supplement title overflow (possibly school too)
+  - [ ] ~~add dialog or hover card over supplement title and display all supplement information~~
   - [ ] potentially make Complete By field date picker (will update exisitng event for supplement or create a new one with new date)
+  - [ ] make list cell a select field that populates with list of supplement and makes API to update and change list upon different selection
 - [x] UI scaffolding
   - [x] Home Page, Search Page, My Lists + Calendar (pass auth as props + auth protect pages)
   - [x] Nav bar
-- [ ] Tidying up UI + Extras
-  - [ ] Infinite scroll of schools in search
-  - [ ] Filter calendar events by school
+- [ ] Calelndar page
+  - [ ] Toggle between event creation form and calendar
+  - [ ] Filter calendar events with same filters as dashboard
   - [ ] Use shadcn/ui date picker with time for event creation
-  - [ ] TBD
+- [ ] Schools page
+  - [ ] Populate select field if school already in a list, update list if on select onchange (like in dashboard)
+  - [ ] Infinite scroll of schools
+  - [ ] School image
+  - [ ] Schoo link?
+- [ ] Home / Landing Page
+  - [ ] make only public page
+- [ ] Tidying up UI + Extras
+  - [ ] Dark mode
 - [ ] Google Calendar & Apple Calendar integration
 - [ ] Deploy
 - [ ] Create scraper

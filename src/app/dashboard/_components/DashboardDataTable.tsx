@@ -23,22 +23,75 @@ import {
 
 import { Button } from '~/components/ui/button';
 import { Input } from '~/components/ui/input';
-import { useState } from 'react';
+import { MultiCombobox } from '~/components/ui/combobox';
+import { useState, useMemo } from 'react';
+import { X } from 'lucide-react';
+
+import type { Status } from './DashboardColumns';
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  listOptions: { value: string; label: string }[];
 }
 
 export function DashboardDataTable<TData, TValue>({
   columns,
   data,
+  listOptions,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [selectedLists, setSelectedLists] = useState<string[]>([]);
+  const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
+  const [selectedApplicationTypes, setSelectedApplicationTypes] = useState<
+    string[]
+  >([]);
+
+  const statusOptions = (
+    ['Completed', 'In Progress', 'Planned', 'Not Planned'] satisfies Status[]
+  ).map((status) => ({
+    value: status,
+    label: status,
+  }));
+
+  const applicationTypeOptions = [
+    { value: 'RD', label: 'RD' },
+    { value: 'EA', label: 'EA' },
+    { value: 'ED', label: 'ED' },
+    { value: 'ED2', label: 'ED2' },
+  ];
+
+  // Filter data based on selected lists, statuses, and application types
+  const filteredData = useMemo(() => {
+    let filtered = data;
+
+    // Filter by lists
+    if (selectedLists.length > 0) {
+      filtered = filtered.filter((item: any) =>
+        selectedLists.includes(item.list_name),
+      );
+    }
+
+    // Filter by statuses
+    if (selectedStatuses.length > 0) {
+      filtered = filtered.filter((item: any) =>
+        selectedStatuses.includes(item.status),
+      );
+    }
+
+    // Filter by application types
+    if (selectedApplicationTypes.length > 0) {
+      filtered = filtered.filter((item: any) =>
+        selectedApplicationTypes.includes(item.application_type),
+      );
+    }
+
+    return filtered;
+  }, [data, selectedLists, selectedStatuses, selectedApplicationTypes]);
 
   const table = useReactTable({
-    data,
+    data: filteredData,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -52,9 +105,52 @@ export function DashboardDataTable<TData, TValue>({
     },
   });
 
+  // Check if any filters are active
+  const hasActiveFilters = useMemo(() => {
+    return (
+      selectedLists.length > 0 ||
+      selectedStatuses.length > 0 ||
+      selectedApplicationTypes.length > 0 ||
+      (table.getColumn('school_name')?.getFilterValue() as string)?.length > 0
+    );
+  }, [
+    selectedLists.length,
+    selectedStatuses.length,
+    selectedApplicationTypes.length,
+    table,
+  ]);
+
+  // Reset all filters
+  const resetFilters = () => {
+    setSelectedLists([]);
+    setSelectedStatuses([]);
+    setSelectedApplicationTypes([]);
+    table.getColumn('school_name')?.setFilterValue('');
+  };
+
+  // Calculate statistics
+  const totalSchools = new Set(data.map((item: any) => item.school_name)).size;
+  const totalSupplements = data.length;
+  const completedSupplements = data.filter(
+    (item: any) => item.status === 'Completed',
+  ).length;
+
   return (
     <div>
-      <div className="flex items-center py-4">
+      <div className="mb-6 p-6 bg-gradient-to-r from-muted/50 to-accent/30 rounded-lg border border-border">
+        <h2 className="text-xl font-semibold text-foreground">
+          You are applying to{' '}
+          <span className="text-primary font-bold">{totalSchools}</span>{' '}
+          schools! You have completed{' '}
+          <span className="text-chart-2 font-bold">{completedSupplements}</span>{' '}
+          /{' '}
+          <span className="text-muted-foreground font-bold">
+            {totalSupplements}
+          </span>{' '}
+          supplements!
+        </h2>
+      </div>
+      <div className="flex items-center gap-4 py-4">
         <Input
           placeholder="Filter by school name..."
           value={
@@ -65,6 +161,40 @@ export function DashboardDataTable<TData, TValue>({
           }
           className="max-w-sm"
         />
+        <MultiCombobox
+          options={listOptions}
+          selectedValues={selectedLists}
+          onSelectionChange={setSelectedLists}
+          placeholder="Filter by lists..."
+          emptyText="No lists found."
+          buttonText="Lists"
+        />
+        <MultiCombobox
+          options={statusOptions}
+          selectedValues={selectedStatuses}
+          onSelectionChange={setSelectedStatuses}
+          placeholder="Filter by status..."
+          emptyText="No statuses found."
+          buttonText="Status"
+        />
+        <MultiCombobox
+          options={applicationTypeOptions}
+          selectedValues={selectedApplicationTypes}
+          onSelectionChange={setSelectedApplicationTypes}
+          placeholder="Filter by application type..."
+          emptyText="No application types found."
+          buttonText="App. Type"
+        />
+        {hasActiveFilters && (
+          <Button
+            variant="ghost"
+            onClick={resetFilters}
+            className="flex items-center gap-1 text-muted-foreground hover:text-foreground"
+          >
+            Reset
+            <X className="h-4 w-4" />
+          </Button>
+        )}
       </div>
       <div className="rounded-md border">
         <Table>

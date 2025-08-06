@@ -186,7 +186,7 @@ export const supplementsRouter = createTRPCRouter({
         list_name: record.list_name,
         application_type: record.application_type ?? 'RD',
         deadline: record.deadline_date,
-        supplement_title: record.prompt,
+        supplement_prompt: record.prompt,
         complete_by:
           record.calendar_event_id && record.calendar_event_end
             ? record.calendar_event_end

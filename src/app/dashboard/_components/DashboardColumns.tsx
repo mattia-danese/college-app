@@ -17,15 +17,18 @@ import { format } from 'date-fns';
 
 // This type is used to define the shape of our data.
 // You can use a Zod schema here if you want.
+
+export type Status = 'Completed' | 'In Progress' | 'Planned' | 'Not Planned';
+
 export type DashboardSupplementRow = {
   id: string;
   school_name: string;
   list_name: string;
   application_type: string;
   deadline: Date;
-  supplement_title: string;
+  supplement_prompt: string;
   complete_by: Date;
-  status: 'Completed' | 'In Progress' | 'Planned' | 'Not Planned';
+  status: Status;
 };
 
 export const columns: ColumnDef<DashboardSupplementRow>[] = [
@@ -42,30 +45,84 @@ export const columns: ColumnDef<DashboardSupplementRow>[] = [
         </Button>
       );
     },
+    cell: ({ row }) => {
+      return (
+        <div className="max-w-[200px] break-words whitespace-normal">
+          {row.getValue('school_name')}
+        </div>
+      );
+    },
   },
   {
     accessorKey: 'list_name',
-    header: 'List',
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+        >
+          List
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
   },
   {
     accessorKey: 'application_type',
-    header: 'Application Type',
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+        >
+          App. Type
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
   },
   {
     accessorKey: 'deadline',
-    header: () => <div>Deadline</div>,
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+        >
+          Deadline
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
     cell: ({ row }) => {
       const date = format(row.getValue('deadline'), 'MM-dd-yyyy');
       return <div className="font-medium">{date}</div>;
     },
   },
   {
-    accessorKey: 'supplement_title',
-    header: 'Supplement Title',
+    accessorKey: 'supplement_prompt',
+    header: 'Supplement Prompt',
+    cell: ({ row }) => {
+      return (
+        <div className="max-w-[200px] break-words whitespace-normal">
+          {row.getValue('supplement_prompt')}
+        </div>
+      );
+    },
   },
   {
     accessorKey: 'complete_by',
-    header: () => <div>Complete By</div>,
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+        >
+          Complete By
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
     cell: ({ row }) => {
       const date = format(row.getValue('complete_by'), 'MM-dd-yyyy');
       return <div className="font-medium">{date}</div>;
@@ -73,7 +130,17 @@ export const columns: ColumnDef<DashboardSupplementRow>[] = [
   },
   {
     accessorKey: 'status',
-    header: 'Status',
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+        >
+          Status
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
   },
 
   //   {
