@@ -16,6 +16,7 @@ import {
   CarouselPrevious,
   type CarouselApi,
 } from '~/components/ui/carousel';
+import { DateTimePicker } from '~/components/date-picker';
 
 type supplement = {
   supplement_id: number;
@@ -216,31 +217,21 @@ function SupplementEventForm({
           />
         </div>
         <div className="mb-4">
-          <Label
-            htmlFor={`start-${supplement.supplement_id}`}
-            className="mb-1 block"
-          >
-            Start Date & Time
-          </Label>
-          <Input
+          <DateTimePicker
             id={`start-${supplement.supplement_id}`}
-            type="datetime-local"
-            value={start.toISOString().slice(0, 16)}
-            onChange={(e) => setStart(new Date(e.target.value))}
+            value={start}
+            onChange={setStart}
+            dateLabel="Start Date"
+            timeLabel="Time"
           />
         </div>
         <div className="mb-4">
-          <Label
-            htmlFor={`end-${supplement.supplement_id}`}
-            className="mb-1 block"
-          >
-            End Date & Time
-          </Label>
-          <Input
+          <DateTimePicker
             id={`end-${supplement.supplement_id}`}
-            type="datetime-local"
-            value={end.toISOString().slice(0, 16)}
-            onChange={(e) => setEnd(new Date(e.target.value))}
+            value={end}
+            onChange={setEnd}
+            dateLabel="End Date"
+            timeLabel="Time"
           />
         </div>
         <div className="mb-4">

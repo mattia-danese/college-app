@@ -18,10 +18,10 @@
 - [x] UI scaffolding
   - [x] Home Page, Search Page, My Lists + Calendar (pass auth as props + auth protect pages)
   - [x] Nav bar
-- [ ] Calelndar page
+- [x] Calelndar page
   - [x] Toggle between event creation form and calendar
   - [x] Filter calendar events with same filters as dashboard
-  - [ ] Use shadcn/ui date picker with time for event creation
+  - [x] Use shadcn/ui date picker with time for event creation
 - [ ] Schools page
   - [ ] Populate select field if school already in a list, update list if on select onchange (like in dashboard)
   - [ ] Infinite scroll of schools
