@@ -10,10 +10,27 @@ import {
 } from '~/components/ui/navigation-menu';
 import { useUser, SignInButton, SignUpButton, UserButton } from '@clerk/nextjs';
 import { cn } from '~/lib/utils';
+import { DarkModeToggle } from './DarkModeToggel';
 
 export function Navbar() {
   const pathname = usePathname();
-  const { isSignedIn } = useUser();
+  const { isSignedIn, isLoaded } = useUser();
+
+  // Don't render until Clerk has loaded to prevent hydration mismatch
+  if (!isLoaded) {
+    return (
+      <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container flex h-16 items-center justify-between">
+          <Link href="/" className="flex items-center gap-2 font-bold text-lg">
+            <span className="text-primary">MyApp</span>
+          </Link>
+          <div className="flex items-center gap-2">
+            <div className="h-9 w-9 animate-pulse bg-muted rounded" />
+          </div>
+        </div>
+      </nav>
+    );
+  }
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -100,6 +117,9 @@ export function Navbar() {
               </SignUpButton>
             </>
           )}
+          <div className={isSignedIn ? 'ml-2' : 'mx-1'}>
+            <DarkModeToggle />
+          </div>
         </div>
       </div>
     </nav>

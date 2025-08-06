@@ -30,7 +30,7 @@
 - [ ] Home / Landing Page
   - [ ] make only public page
 - [ ] Tidying up UI + Extras
-  - [ ] Dark mode
+  - [x] Dark mode
 - [ ] Google Calendar & Apple Calendar integration
 - [ ] Deploy
 - [ ] Create scraper

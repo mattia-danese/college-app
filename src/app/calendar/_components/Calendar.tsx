@@ -14,6 +14,7 @@ import { createEventModalPlugin } from '@schedule-x/event-modal';
 import { createDragAndDropPlugin } from '@schedule-x/drag-and-drop';
 import { createEventsServicePlugin } from '@schedule-x/events-service';
 import { useEffect, useRef, useState } from 'react';
+import { useTheme } from 'next-themes';
 
 type CalendarProps = {
   userId: number;
@@ -21,6 +22,7 @@ type CalendarProps = {
 };
 
 function Calendar({ userId, events }: CalendarProps) {
+  const { theme, resolvedTheme } = useTheme();
   const eventsServiceRef = useRef<ReturnType<
     typeof createEventsServicePlugin
   > | null>(null);
@@ -38,6 +40,13 @@ function Calendar({ userId, events }: CalendarProps) {
       eventsServiceRef.current,
     ],
   });
+
+  // Update calendar theme when app theme changes
+  useEffect(() => {
+    if (!calendar) return;
+    const currentTheme = resolvedTheme || theme || 'light';
+    calendar.setTheme(currentTheme as 'light' | 'dark');
+  }, [calendar, theme, resolvedTheme]);
 
   useEffect(() => {
     if (!eventsServiceRef.current) return;

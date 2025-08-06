@@ -7,6 +7,7 @@ import { Toaster } from '~/components/ui/sonner';
 // import { Navbar } from "~/components/Navbar";
 import { UserProvider } from '~/components/UserProvider'; // <-- import here
 import Navbar from '~/components/Navbar';
+import { ThemeProvider } from '~/components/ui/theme-provider';
 
 export const metadata: Metadata = {
   title: 'Create T3 App',
@@ -24,15 +25,22 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <ClerkProvider>
-      <html lang="en" className={`${geist.variable}`}>
+      <html lang="en" className={`${geist.variable}`} suppressHydrationWarning>
         <body>
-          <TRPCReactProvider>
-            <UserProvider>
-              <Navbar />
-              {children}
-            </UserProvider>
-            <Toaster />
-          </TRPCReactProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <TRPCReactProvider>
+              <UserProvider>
+                <Navbar />
+                {children}
+              </UserProvider>
+              <Toaster />
+            </TRPCReactProvider>
+          </ThemeProvider>
         </body>
       </html>
     </ClerkProvider>
