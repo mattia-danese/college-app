@@ -31,6 +31,7 @@ function Calendar({ userId, events }: CalendarProps) {
 
   const calendar = useNextCalendarApp({
     views: [createViewWeek(), createViewMonthGrid()],
+    defaultView: 'month-grid',
     plugins: [
       createEventModalPlugin(),
       createDragAndDropPlugin(),

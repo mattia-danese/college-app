@@ -168,6 +168,7 @@ export function DashboardDataTable<TData, TValue>({
           placeholder="Filter by lists..."
           emptyText="No lists found."
           buttonText="Lists"
+          concise={true}
         />
         <MultiCombobox
           options={statusOptions}
@@ -176,6 +177,7 @@ export function DashboardDataTable<TData, TValue>({
           placeholder="Filter by status..."
           emptyText="No statuses found."
           buttonText="Status"
+          concise={true}
         />
         <MultiCombobox
           options={applicationTypeOptions}
@@ -184,6 +186,7 @@ export function DashboardDataTable<TData, TValue>({
           placeholder="Filter by application type..."
           emptyText="No application types found."
           buttonText="App. Type"
+          concise={true}
         />
         {hasActiveFilters && (
           <Button

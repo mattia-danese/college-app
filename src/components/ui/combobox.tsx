@@ -26,6 +26,7 @@ interface ComboboxProps {
   placeholder?: string;
   emptyText?: string;
   buttonText?: string;
+  concise?: boolean;
 }
 
 export function MultiCombobox({
@@ -35,6 +36,7 @@ export function MultiCombobox({
   placeholder = 'Select options...',
   emptyText = 'No options found.',
   buttonText = 'Select options...',
+  concise = true,
 }: ComboboxProps) {
   const [open, setOpen] = React.useState(false);
 
@@ -61,16 +63,16 @@ export function MultiCombobox({
             </div>
             {selectedValues.length > 0 && (
               <div className="flex items-center gap-1">
-                {selectedValues.length <= 2 ? (
+                {concise && selectedValues.length > 2 ? (
+                  <Badge variant="secondary" className="text-xs">
+                    {selectedValues.length} selected
+                  </Badge>
+                ) : (
                   selectedValues.map((value) => (
                     <Badge key={value} variant="secondary" className="text-xs">
                       {value}
                     </Badge>
                   ))
-                ) : (
-                  <Badge variant="secondary" className="text-xs">
-                    {selectedValues.length} selected
-                  </Badge>
                 )}
               </div>
             )}

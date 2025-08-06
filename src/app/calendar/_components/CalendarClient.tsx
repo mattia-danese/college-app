@@ -3,9 +3,9 @@
 import Calendar from './Calendar';
 import CalendarCompanion from './CalendarCompanion';
 import { useEffect, useMemo, useState } from 'react';
-import { Checkbox } from '~/components/ui/checkbox';
 import { api } from '~/trpc/react';
-import { Label } from '~/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs';
+import { MultiCombobox } from '~/components/ui/combobox';
 
 import type { CalendarEventExternal } from '@schedule-x/calendar';
 import { format, isEqual } from 'date-fns';
@@ -53,6 +53,15 @@ export default function CalendarClient() {
     },
   );
 
+  // Extract unique list names from data
+  const listOptions = useMemo(() => {
+    const uniqueLists = Array.from(new Set(userLists.map((list) => list.name)));
+    return uniqueLists.map((listName) => ({
+      value: listName,
+      label: listName,
+    }));
+  }, [userLists]);
+
   // Set all as selected when lists load
   useEffect(() => {
     if (userLists.length > 0 && selectedListIds.length === 0) {
@@ -89,53 +98,54 @@ export default function CalendarClient() {
     return result;
   }, [selectedListIds, supplementsWithoutEvents]);
 
-  const handleCheckboxChange = (
-    listId: number,
-    checked: boolean | 'indeterminate',
-  ) => {
-    const isChecked = checked === true;
-    if (isChecked) {
-      // Add the id
-      setSelectedListIds((prev) =>
-        prev.includes(listId) ? prev : [...prev, listId],
-      );
-    } else {
-      // Remove the id
-      setSelectedListIds((prev) => prev.filter((id) => id !== listId));
-    }
+  const handleListSelectionChange = (selectedListNames: string[]) => {
+    const selectedIds = userLists
+      .filter((list) => selectedListNames.includes(list.name))
+      .map((list) => list.id);
+    setSelectedListIds(selectedIds);
   };
 
   // potentially show spinner or skeleton
   if (!user) return null;
 
   return (
-    <div>
-      <div className="flex items-start gap-3">
-        {userLists.map((list) => (
-          <div key={list.id} className="flex items-center gap-3">
-            <Checkbox
-              id={list.id.toString()}
-              value={list.name}
-              checked={selectedListIds.includes(list.id)}
-              onCheckedChange={(checked) =>
-                handleCheckboxChange(list.id, checked)
-              }
+    <div className="flex flex-col items-center min-h-screen py-8">
+      <Tabs defaultValue="calendar" className="w-full max-w-6xl">
+        <div className="flex justify-center mb-6">
+          <TabsList className="grid grid-cols-2 w-80">
+            <TabsTrigger value="calendar">Calendar</TabsTrigger>
+            <TabsTrigger value="schedule">Schedule Events</TabsTrigger>
+          </TabsList>
+        </div>
+
+        <TabsContent value="calendar" className="w-full">
+          <div className="flex items-start gap-3 mb-6">
+            <MultiCombobox
+              options={listOptions}
+              selectedValues={userLists
+                .filter((list) => selectedListIds.includes(list.id))
+                .map((list) => list.name)}
+              onSelectionChange={handleListSelectionChange}
+              placeholder="Filter by lists..."
+              emptyText="No lists found."
+              buttonText="Lists"
+              concise={false}
             />
-            <Label htmlFor={list.id.toString()}>{list.name}</Label>
           </div>
-        ))}
-      </div>
+          <Calendar userId={user.id} events={calendarEventsToDisplay} />
+        </TabsContent>
 
-      <CalendarCompanion
-        userId={user.id}
-        supplements={supplementsToDisplay}
-        onEventChange={async () => {
-          await refetchSupplements();
-          await refetchCalendarEvents();
-        }}
-      />
-
-      <Calendar userId={user.id} events={calendarEventsToDisplay} />
+        <TabsContent value="schedule" className="w-full">
+          <CalendarCompanion
+            userId={user.id}
+            supplements={supplementsToDisplay}
+            onEventChange={async () => {
+              await refetchSupplements();
+              await refetchCalendarEvents();
+            }}
+          />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
