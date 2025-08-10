@@ -37,7 +37,12 @@ export function Navbar() {
       <div className="container flex h-16 items-center justify-between">
         {/* Logo or Brand */}
         <Link href="/" className="flex items-center gap-2 font-bold text-lg">
-          <span className="text-primary">MyApp</span>
+          <span
+            className="ml-2 text-primary text-2xl font-extrabold tracking-tight bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent select-none"
+            style={{ letterSpacing: '0.01em' }}
+          >
+            Collegenda
+          </span>
         </Link>
 
         <div className="flex items-center gap-2">
@@ -46,18 +51,20 @@ export function Navbar() {
               <NavigationMenu>
                 <NavigationMenuList>
                   <NavigationMenuItem>
-                    <Link href="/">
+                    <Link href="/schools">
                       <Button
-                        variant={pathname === '/' ? 'default' : 'ghost'}
+                        variant={pathname === '/schools' ? 'default' : 'ghost'}
                         className={cn(
                           'mx-1 px-4',
-                          pathname === '/'
+                          pathname === '/schools'
                             ? 'font-semibold'
                             : 'text-muted-foreground hover:text-primary',
                         )}
-                        aria-current={pathname === '/' ? 'page' : undefined}
+                        aria-current={
+                          pathname === '/schools' ? 'page' : undefined
+                        }
                       >
-                        Home
+                        Schools
                       </Button>
                     </Link>
                   </NavigationMenuItem>

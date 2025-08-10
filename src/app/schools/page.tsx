@@ -1,13 +1,13 @@
 import { auth } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
-import DashboardClient from './_components/DashboardClient';
+import SchoolsClient from './_components/SchoolsClient';
 
-export default async function DashboardPage() {
+export default async function SchoolsPage() {
   const { userId } = await auth();
 
   if (!userId) {
     redirect('/');
   }
 
-  return <DashboardClient />;
+  return <SchoolsClient />;
 }

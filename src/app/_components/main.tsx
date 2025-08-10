@@ -1,199 +1,145 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { Input } from '~/components/ui/input';
-import { Card, CardContent } from '~/components/ui/card';
-import { api } from '~/trpc/react';
-
-import { useDebounce } from './useDebounce';
-import Spinner from './Spinner';
+import Link from 'next/link';
+import { SignedIn, SignedOut, SignInButton } from '@clerk/nextjs';
+import { Button } from '~/components/ui/button';
 import {
-  useUser,
-  SignedIn,
-  SignedOut,
-  SignInButton,
-  SignUpButton,
-  UserButton,
-} from '@clerk/nextjs';
-import { Lists } from './Lists';
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '~/components/ui/card';
 import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from '~/components/ui/select';
-import { toast } from 'sonner';
+  CalendarDays,
+  LayoutDashboard,
+  Search as SearchIcon,
+  ArrowRight,
+} from 'lucide-react';
 
 export function MainPage() {
-  const [query, setQuery] = useState('');
-  const [currentOffset, setCurrentOffset] = useState(0);
-
-  const debouncedQuery = useDebounce(query, 300);
-
-  const { data: schools, isLoading } = api.schools.get_paginated.useQuery({
-    limit: 10,
-    offset: currentOffset,
-    query: debouncedQuery?.trim() === '' ? undefined : debouncedQuery,
-  });
-
-  const { isLoaded, isSignedIn, user } = useUser();
-
-  const userEmail = user?.emailAddresses[0]?.emailAddress;
-
-  const { data: userObj, isLoading: isUserLoading } = api.users.get.useQuery(
-    { email: userEmail! },
-    {
-      enabled: isLoaded && isSignedIn && !!userEmail,
-    },
-  );
-
-  const { data: userLists, isLoading: isListsLoading } =
-    api.lists.get_by_user.useQuery(
-      {
-        user_id: userObj?.id ?? 0,
-      },
-      {
-        enabled: !!userObj,
-      },
-    );
-
-  const createListEntry = api.list_entries.create.useMutation();
-  const [selectedLists, setSelectedLists] = useState<Record<number, number>>(
-    {},
-  ); // school.id => list.id
-  const [addingSchoolId, setAddingSchoolId] = useState<number | null>(null);
-
-  const handleAddSchoolToList = async (
-    school_id: number,
-    list_id: number,
-    schoolName: string,
-  ) => {
-    try {
-      setAddingSchoolId(school_id);
-      await createListEntry.mutateAsync({
-        user_id: userObj!.id,
-        school_id,
-        list_id,
-      });
-
-      const list = userLists?.find((l) => l.id === list_id);
-      const listName = list ? list.name : 'your list';
-
-      toast.success(`${schoolName} was added to "${listName}"`);
-    } catch (error) {
-      toast.error('Failed to add school.');
-    } finally {
-      setAddingSchoolId(null);
-    }
-  };
-
-  const { data: allSupplements, isLoading: isAllSupplementsLoading } =
-    api.supplements.get_by_user.useQuery(
-      {
-        user_id: userObj?.id ?? 0,
-      },
-      {
-        enabled: !!userObj,
-      },
-    );
-
-  console.log('allSupplements', allSupplements);
-
   return (
-    <div>
-      <div className="p-4 max-w-2xl mx-auto w-[60vw] flex flex-col min-h-screen">
-        <Input
-          placeholder="Search schools..."
-          value={query}
-          onChange={(e) => {
-            setQuery(e.target.value);
-          }}
-          className="mb-4"
-        />
+    <>
+      <section className="relative isolate overflow-hidden">
+        <div className="mx-auto flex max-w-6xl flex-col items-center gap-8 px-6 pt-20 sm:pt-24 md:pt-28 lg:pt-32 pb-8 sm:pb-10 md:pb-12 lg:pb-14 text-center">
+          <h1 className="text-balance bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-4xl font-bold tracking-tight text-transparent sm:text-5xl md:text-6xl">
+            Plan, track, and ace your college applications
+          </h1>
 
-        {isListsLoading ? (
-          <Spinner />
-        ) : schools && schools.length === 0 ? (
-          <div className="text-center text-gray-500 mt-8">
-            No results found.
+          <p className="text-pretty max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">
+            Search schools, manage deadlines, and organize supplements in one
+            place. Stay on top of every requirement with a clear, personalized
+            schedule.
+          </p>
+
+          <div className="mt-4 flex flex-col items-center gap-3 sm:flex-row">
+            <SignedOut>
+              <SignInButton mode="modal">
+                <Button size="lg" className="px-6">
+                  Sign up / Log In
+                </Button>
+              </SignInButton>
+            </SignedOut>
+
+            <SignedIn>
+              <Link href="/schools">
+                <Button size="lg" className="px-6">
+                  Start Searching
+                </Button>
+              </Link>
+            </SignedIn>
           </div>
-        ) : (
-          schools?.map((school) => (
-            <Card key={school.id} className="mb-4">
-              <CardContent className="p-4 grid grid-cols-2 gap-4">
-                <div>
-                  <div className="font-bold text-lg">{school.name}</div>
-                  <div>
-                    {school.city}, {school.state}
+        </div>
+      </section>
+
+      {/* Features */}
+      <section className="pt-4 sm:pt-6 md:pt-8 pb-10 sm:pb-14 md:pb-16">
+        <div className="mx-auto w-full max-w-6xl px-6">
+          <div className="mb-6 text-center">
+            <h2 className="mt-3 text-balance text-2xl font-semibold sm:text-3xl">
+              Three ways to streamline your application journey
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {/* 1. School Search */}
+            <Card className="h-full">
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <div className="rounded-md bg-primary/10 p-2 text-primary">
+                    <SearchIcon className="h-5 w-5" />
                   </div>
-                  <div>Size: {school.size.toLocaleString()}</div>
-                  <div>Tuition: ${school.tuition.toLocaleString()}</div>
-                  <div>
-                    Acceptance Rate:{' '}
-                    {(Number(school.acceptance_rate) * 100).toFixed(2)}%
-                  </div>
+                  <CardTitle className="text-base">
+                    Search schools instantly
+                  </CardTitle>
                 </div>
-                <div className="flex flex-col justify-end items-start">
-                  <div>
-                    Deadlines:{' '}
-                    {school.deadlines.map((deadline) => (
-                      <div key={deadline.id}>
-                        {deadline.application_type} -{' '}
-                        {new Date(deadline.date).toLocaleDateString()}
-                      </div>
-                    ))}
-                  </div>
-                  <div># of Supplements: {school.supplementsCount}</div>
-                </div>
-                <Select
-                  onValueChange={(value) => {
-                    const listId = parseInt(value);
-                    setSelectedLists((prev) => ({
-                      ...prev,
-                      [school.id]: listId,
-                    }));
-                    handleAddSchoolToList(school.id, listId, school.name);
-                  }}
-                  value={selectedLists[school.id]?.toString() || ''}
-                  disabled={addingSchoolId === school.id || isListsLoading}
-                >
-                  <SelectTrigger
-                    className="w-[180px]"
-                    disabled={addingSchoolId === school.id || isListsLoading}
-                  >
-                    <SelectValue
-                      placeholder={
-                        isListsLoading ? 'Loading lists...' : 'Add to a List'
-                      }
-                    />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {isListsLoading ? (
-                      <div className="flex justify-center p-4">
-                        <Spinner />
-                      </div>
-                    ) : (
-                      <SelectGroup>
-                        <SelectLabel>Your Lists</SelectLabel>
-                        {userLists?.map((list) => (
-                          <SelectItem key={list.id} value={list.id.toString()}>
-                            {list.name}
-                          </SelectItem>
-                        ))}
-                      </SelectGroup>
-                    )}
-                  </SelectContent>
-                </Select>
+                <CardDescription>
+                  Find and compare schools without opening countless tabs. Get
+                  key details at a glance.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Link href="/schools">
+                  <Button variant="ghost" className="px-0">
+                    Explore schools
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </Link>
               </CardContent>
             </Card>
-          ))
-        )}
-      </div>
 
-      {/* <Lists /> */}
-    </div>
+            {/* 2. Calendar + Supplements */}
+            <Card className="h-full">
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <div className="rounded-md bg-primary/10 p-2 text-primary">
+                    <CalendarDays className="h-5 w-5" />
+                  </div>
+                  <CardTitle className="text-base">
+                    Plan with calendar
+                  </CardTitle>
+                </div>
+                <CardDescription>
+                  Schedule supplement work and view requirements by school—no
+                  more digging through websites.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Link href="/calendar">
+                  <Button variant="ghost" className="px-0">
+                    Open calendar
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+
+            {/* 3. Dashboards */}
+            <Card className="h-full">
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <div className="rounded-md bg-primary/10 p-2 text-primary">
+                    <LayoutDashboard className="h-5 w-5" />
+                  </div>
+                  <CardTitle className="text-base">Stay on track</CardTitle>
+                </div>
+                <CardDescription>
+                  Modern, intuitive dashboards for schools and supplements to
+                  easily track progress—no more messy spreadsheets.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Link href="/dashboard">
+                  <Button variant="ghost" className="px-0">
+                    View dashboard
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+    </>
   );
 }
