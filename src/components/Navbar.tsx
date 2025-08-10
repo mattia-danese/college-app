@@ -9,6 +9,14 @@ import {
   NavigationMenuItem,
 } from '~/components/ui/navigation-menu';
 import { useUser, SignInButton, SignUpButton, UserButton } from '@clerk/nextjs';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '~/components/ui/dropdown-menu';
+import { Menu } from 'lucide-react';
 import { cn } from '~/lib/utils';
 import { DarkModeToggle } from './DarkModeToggel';
 
@@ -38,7 +46,7 @@ export function Navbar() {
         {/* Logo or Brand */}
         <Link href="/" className="flex items-center gap-2 font-bold text-lg">
           <span
-            className="ml-2 text-primary text-2xl font-extrabold tracking-tight bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent select-none"
+            className="ml-2 text-2xl font-extrabold tracking-tight bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent select-none"
             style={{ letterSpacing: '0.01em' }}
           >
             Collegenda
@@ -48,80 +56,147 @@ export function Navbar() {
         <div className="flex items-center gap-2">
           {isSignedIn ? (
             <>
-              <NavigationMenu>
-                <NavigationMenuList>
-                  <NavigationMenuItem>
-                    <Link href="/schools">
-                      <Button
-                        variant={pathname === '/schools' ? 'default' : 'ghost'}
-                        className={cn(
-                          'mx-1 px-4',
-                          pathname === '/schools'
-                            ? 'font-semibold'
-                            : 'text-muted-foreground hover:text-primary',
-                        )}
-                        aria-current={
-                          pathname === '/schools' ? 'page' : undefined
-                        }
-                      >
-                        Schools
-                      </Button>
-                    </Link>
-                  </NavigationMenuItem>
-                  <NavigationMenuItem>
-                    <Link href="/calendar">
-                      <Button
-                        variant={pathname === '/calendar' ? 'default' : 'ghost'}
-                        className={cn(
-                          'mx-1 px-4',
-                          pathname === '/calendar'
-                            ? 'font-semibold'
-                            : 'text-muted-foreground hover:text-primary',
-                        )}
-                        aria-current={
-                          pathname === '/calendar' ? 'page' : undefined
-                        }
-                      >
-                        Calendar
-                      </Button>
-                    </Link>
-                  </NavigationMenuItem>
-                  <NavigationMenuItem>
-                    <Link href="/dashboard">
-                      <Button
-                        variant={
-                          pathname === '/dashboard' ? 'default' : 'ghost'
-                        }
-                        className={cn(
-                          'mx-1 px-4',
-                          pathname === '/dashboard'
-                            ? 'font-semibold'
-                            : 'text-muted-foreground hover:text-primary',
-                        )}
-                        aria-current={
-                          pathname === '/dashboard' ? 'page' : undefined
-                        }
-                      >
-                        Dashboard
-                      </Button>
-                    </Link>
-                  </NavigationMenuItem>
-                </NavigationMenuList>
-              </NavigationMenu>
-              <UserButton />
+              {/* Desktop/Tablet nav */}
+              <div className="hidden md:flex items-center gap-2">
+                <NavigationMenu>
+                  <NavigationMenuList>
+                    <NavigationMenuItem>
+                      <Link href="/schools">
+                        <Button
+                          variant={
+                            pathname === '/schools' ? 'default' : 'ghost'
+                          }
+                          className={cn(
+                            'mx-1 px-4',
+                            pathname === '/schools'
+                              ? 'font-semibold'
+                              : 'text-muted-foreground hover:text-primary',
+                          )}
+                          aria-current={
+                            pathname === '/schools' ? 'page' : undefined
+                          }
+                        >
+                          Schools
+                        </Button>
+                      </Link>
+                    </NavigationMenuItem>
+                    <NavigationMenuItem>
+                      <Link href="/calendar">
+                        <Button
+                          variant={
+                            pathname === '/calendar' ? 'default' : 'ghost'
+                          }
+                          className={cn(
+                            'mx-1 px-4',
+                            pathname === '/calendar'
+                              ? 'font-semibold'
+                              : 'text-muted-foreground hover:text-primary',
+                          )}
+                          aria-current={
+                            pathname === '/calendar' ? 'page' : undefined
+                          }
+                        >
+                          Calendar
+                        </Button>
+                      </Link>
+                    </NavigationMenuItem>
+                    <NavigationMenuItem>
+                      <Link href="/dashboard">
+                        <Button
+                          variant={
+                            pathname === '/dashboard' ? 'default' : 'ghost'
+                          }
+                          className={cn(
+                            'mx-1 px-4',
+                            pathname === '/dashboard'
+                              ? 'font-semibold'
+                              : 'text-muted-foreground hover:text-primary',
+                          )}
+                          aria-current={
+                            pathname === '/dashboard' ? 'page' : undefined
+                          }
+                        >
+                          Dashboard
+                        </Button>
+                      </Link>
+                    </NavigationMenuItem>
+                  </NavigationMenuList>
+                </NavigationMenu>
+                <UserButton />
+              </div>
+
+              {/* Mobile dropdown */}
+              <div className="md:hidden">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      aria-label="Open menu"
+                    >
+                      <Menu className="h-5 w-5" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-fit min-w-0">
+                    <DropdownMenuItem asChild>
+                      <Link href="/schools">Schools</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/calendar">Calendar</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/dashboard">Dashboard</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <div className="px-2 py-1.5">
+                      <UserButton />
+                    </div>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
             </>
           ) : (
             <>
-              <SignInButton mode="modal">
-                <Button variant="default" className="mx-1 px-4">
-                  Sign In
-                </Button>
-              </SignInButton>
-              <SignUpButton mode="modal">
-                <Button variant="outline" className="mx-1 px-4">
-                  Sign Up
-                </Button>
-              </SignUpButton>
+              {/* Desktop/Tablet auth buttons */}
+              <div className="hidden md:flex items-center gap-2">
+                <SignInButton mode="modal">
+                  <Button variant="default" className="mx-1 px-4">
+                    Sign In
+                  </Button>
+                </SignInButton>
+                <SignUpButton mode="modal">
+                  <Button variant="outline" className="mx-1 px-4">
+                    Sign Up
+                  </Button>
+                </SignUpButton>
+              </div>
+
+              {/* Mobile dropdown for auth + links */}
+              <div className="md:hidden">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      aria-label="Open menu"
+                    >
+                      <Menu className="h-5 w-5" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-fit min-w-0">
+                    <DropdownMenuItem asChild>
+                      <SignInButton mode="modal">
+                        <button className="w-full text-left">Sign In</button>
+                      </SignInButton>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <SignUpButton mode="modal">
+                        <button className="w-full text-left">Sign Up</button>
+                      </SignUpButton>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
             </>
           )}
           <div className={isSignedIn ? 'ml-2' : 'mx-1'}>
