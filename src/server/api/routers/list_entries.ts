@@ -5,7 +5,7 @@ import { createTRPCRouter, publicProcedure } from '~/server/api/trpc';
 import { list_entries, lists, schools } from '~/server/db/schema';
 
 export const listEntriesRouter = createTRPCRouter({
-  create: publicProcedure
+  create_or_update: publicProcedure
     .input(
       z.object({
         user_id: z.number().int().positive(),
@@ -21,7 +21,13 @@ export const listEntriesRouter = createTRPCRouter({
           list_id: input.list_id,
           school_id: input.school_id,
         })
-        .onConflictDoNothing();
+        .onConflictDoUpdate({
+          target: [list_entries.user_id, list_entries.school_id],
+          set: {
+            list_id: input.list_id,
+            updatedAt: new Date(),
+          },
+        });
     }),
 
   get: publicProcedure
@@ -61,15 +67,24 @@ export const listEntriesRouter = createTRPCRouter({
     .query(({ ctx, input }) => {
       return ctx.db
         .select({
-          user_id: lists.user_id,
-          list_id: lists.id,
           entry_id: list_entries.id,
-          list_name: lists.name,
-          school: schools, // This will be null for empty lists
+          school_id: list_entries.school_id,
+          list_id: list_entries.list_id,
         })
-        .from(lists)
-        .leftJoin(list_entries, eq(list_entries.list_id, lists.id))
-        .leftJoin(schools, eq(list_entries.school_id, schools.id))
+        .from(list_entries)
+        .innerJoin(lists, eq(list_entries.list_id, lists.id))
         .where(eq(lists.user_id, input.user_id));
+    }),
+
+  delete: publicProcedure
+    .input(
+      z.object({
+        list_entry_id: z.number().int().positive(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      await ctx.db
+        .delete(list_entries)
+        .where(eq(list_entries.id, input.list_entry_id));
     }),
 });

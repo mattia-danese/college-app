@@ -1,4 +1,4 @@
-import { eq, ilike, inArray, sql } from 'drizzle-orm';
+import { and, eq, ilike, inArray, sql } from 'drizzle-orm';
 import { z } from 'zod';
 
 import { createTRPCRouter, publicProcedure } from '~/server/api/trpc';
@@ -46,6 +46,7 @@ export const schoolsRouter = createTRPCRouter({
         limit: z.number().min(1).default(10),
         offset: z.number().min(0).default(0),
         query: z.string().optional(),
+        user_id: z.number().int().positive().optional(),
       }),
     )
     .query(async ({ ctx, input }) => {
@@ -85,13 +86,58 @@ export const schoolsRouter = createTRPCRouter({
       }
 
       const records = joined.map(({ school, supplementsCount }) => ({
-        ...school,
-        supplementsCount,
-        deadlines:
+        id: school.id,
+        name: school.name,
+        city: school.city,
+        state: school.state,
+        size: school.size,
+        tuition: school.tuition,
+        acceptance_rate: school.acceptance_rate,
+        deadlines: (
           (deadlineMap.get(school.id)?.sort().reverse() as InferSelectModel<
             typeof deadlines
-          >[]) ?? [],
+          >[]) ?? []
+        ).map((d) => ({
+          id: d.id,
+          application_type: d.application_type as 'RD' | 'EA' | 'ED' | 'ED2',
+          date: d.date,
+        })),
+        supplementsCount,
+        list_id: null as number | null,
+        list_entry_id: null as number | null,
       }));
+
+      // If user_id provided, annotate each school with the user's list_id (if any)
+      if (input.user_id && schoolIds.length > 0) {
+        const entries = await ctx.db
+          .select({
+            id: list_entries.id,
+            school_id: list_entries.school_id,
+            list_id: list_entries.list_id,
+          })
+          .from(list_entries)
+          .where(
+            and(
+              eq(list_entries.user_id, input.user_id),
+              inArray(list_entries.school_id, schoolIds),
+            ),
+          );
+
+        const listBySchool = new Map<number, number>();
+        for (const entry of entries) {
+          listBySchool.set(entry.school_id, entry.list_id);
+        }
+
+        const entriesBySchool = new Map<number, number>();
+        for (const entry of entries) {
+          entriesBySchool.set(entry.school_id, entry.id);
+        }
+
+        for (const record of records) {
+          record.list_id = listBySchool.get(record.id) ?? null;
+          record.list_entry_id = entriesBySchool.get(record.id) ?? null;
+        }
+      }
 
       return records;
     }),
