@@ -1,5 +1,6 @@
 'use client';
 import { Input } from '~/components/ui/input';
+import { Button } from '~/components/ui/button';
 import SchoolsListItem from './SchoolsListItem';
 
 interface SchoolsListProps {
@@ -38,6 +39,9 @@ interface SchoolsListProps {
   updatingSchoolId: number | null;
   query: string;
   onQueryChange: (value: string) => void;
+  onLoadMore: () => void;
+  hasNextPage: boolean;
+  isFetchingNextPage: boolean;
 }
 
 export default function SchoolsList({
@@ -48,6 +52,9 @@ export default function SchoolsList({
   updatingSchoolId,
   query,
   onQueryChange,
+  onLoadMore,
+  hasNextPage,
+  isFetchingNextPage,
 }: SchoolsListProps) {
   if (schools.length === 0) {
     return (
@@ -83,26 +90,35 @@ export default function SchoolsList({
           No schools found.
         </div>
       ) : (
-        schools.map((school) => (
-          <SchoolsListItem
-            key={school.id}
-            id={school.id}
-            name={school.name}
-            city={school.city}
-            state={school.state}
-            size={school.size}
-            tuition={school.tuition}
-            acceptance_rate={school.acceptance_rate}
-            deadlines={school.deadlines}
-            supplementsCount={school.supplementsCount}
-            lists={lists}
-            selectedListId={school.list_id}
-            listEntryId={school.list_entry_id}
-            onSelectListChange={onSelectListChange}
-            onRemoveSchoolFromList={onRemoveSchoolFromList}
-            disabled={updatingSchoolId === school.id}
-          />
-        ))
+        <>
+          {schools.map((school) => (
+            <SchoolsListItem
+              key={school.id}
+              id={school.id}
+              name={school.name}
+              city={school.city}
+              state={school.state}
+              size={school.size}
+              tuition={school.tuition}
+              acceptance_rate={school.acceptance_rate}
+              deadlines={school.deadlines}
+              supplementsCount={school.supplementsCount}
+              lists={lists}
+              selectedListId={school.list_id}
+              listEntryId={school.list_entry_id}
+              onSelectListChange={onSelectListChange}
+              onRemoveSchoolFromList={onRemoveSchoolFromList}
+              disabled={updatingSchoolId === school.id}
+            />
+          ))}
+          <div className="flex justify-center mt-4">
+            {hasNextPage ? (
+              <Button onClick={onLoadMore} disabled={isFetchingNextPage}>
+                {isFetchingNextPage ? 'Loading…' : 'Load more'}
+              </Button>
+            ) : null}
+          </div>
+        </>
       )}
     </div>
   );

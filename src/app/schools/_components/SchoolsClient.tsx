@@ -21,14 +21,27 @@ export default function SchoolsClient() {
   // revisit if multiple updates concurrently (set state to Set<number>)
   const [updatingSchoolId, setUpdatingSchoolId] = useState<number | null>(null);
 
-  //   gets all schools
-  const { data: schools = [], isLoading: isSchoolsLoading } =
-    api.schools.get_paginated.useQuery({
-      limit: 10,
-      // offset: currentOffset,
+  //   gets schools with cursor-based infinite pagination
+  const limit = 10 as const;
+  const {
+    data: schoolsPages,
+    isLoading: isSchoolsLoading,
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage,
+  } = api.schools.get_infinite.useInfiniteQuery(
+    {
+      limit,
       query: debouncedQuery?.trim() === '' ? undefined : debouncedQuery,
       user_id: user?.id ?? undefined,
-    });
+    },
+    {
+      getNextPageParam: (lastPage) => lastPage.nextCursor,
+      initialCursor: undefined,
+    },
+  );
+
+  const schools = (schoolsPages?.pages ?? []).flatMap((p) => p.items);
 
   // gets user lists
   const { data: lists = [], isLoading: isListsLoading } =
@@ -47,7 +60,7 @@ export default function SchoolsClient() {
     schoolName: string,
   ) => {
     const queryInput = {
-      limit: 10,
+      limit,
       query: debouncedQuery?.trim() === '' ? undefined : debouncedQuery,
       user_id: user?.id ?? undefined,
     } as const;
@@ -67,7 +80,7 @@ export default function SchoolsClient() {
       toast.error(`Failed to add ${schoolName} to '${list!.name}'.`);
     } finally {
       // Ensure server truth before re-enabling to avoid flicker
-      await utils.schools.get_paginated.invalidate(queryInput);
+      await utils.schools.get_infinite.invalidate(queryInput);
       setUpdatingSchoolId(null);
     }
   };
@@ -81,7 +94,7 @@ export default function SchoolsClient() {
     list_id: number,
   ) => {
     const queryInput = {
-      limit: 10,
+      limit,
       query: debouncedQuery?.trim() === '' ? undefined : debouncedQuery,
       user_id: user?.id ?? undefined,
     } as const;
@@ -99,7 +112,7 @@ export default function SchoolsClient() {
       toast.error(`Failed to remove ${schoolName} from '${list!.name}'.`);
     } finally {
       // Ensure server truth before re-enabling to avoid flicker
-      await utils.schools.get_paginated.invalidate(queryInput);
+      await utils.schools.get_infinite.invalidate(queryInput);
       setUpdatingSchoolId(null);
     }
   };
@@ -117,6 +130,9 @@ export default function SchoolsClient() {
           updatingSchoolId={updatingSchoolId}
           query={query}
           onQueryChange={setQuery}
+          onLoadMore={() => void fetchNextPage()}
+          hasNextPage={!!hasNextPage}
+          isFetchingNextPage={isFetchingNextPage}
         />
       )}
     </div>

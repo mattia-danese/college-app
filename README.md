@@ -25,8 +25,8 @@
   - [x] Filter calendar events with same filters as dashboard
   - [x] Use shadcn/ui date picker with time for event creation
 - [ ] Schools page
-  - [ ] Populate select field if school already in a list, update list if on select onchange (like in dashboard)
-  - [ ] Infinite scroll of schools
+  - [x] Populate select field if school already in a list, update list if on select onchange (like in dashboard)
+  - [x] Infinite scroll of schools
   - [ ] School image
   - [ ] Schoo link?
 - [ ] Home / Landing Page

@@ -1,4 +1,4 @@
-import { and, eq, ilike, inArray, sql } from 'drizzle-orm';
+import { and, eq, ilike, inArray, sql, gt, asc } from 'drizzle-orm';
 import { z } from 'zod';
 
 import { createTRPCRouter, publicProcedure } from '~/server/api/trpc';
@@ -140,6 +140,122 @@ export const schoolsRouter = createTRPCRouter({
       }
 
       return records;
+    }),
+
+  // Cursor-based pagination for infinite scroll
+  get_infinite: publicProcedure
+    .input(
+      z.object({
+        limit: z.number().min(1).default(10),
+        cursor: z.number().int().positive().optional(),
+        query: z.string().optional(),
+        user_id: z.number().int().positive().optional(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const { limit, cursor, query } = input;
+
+      const conditions = [
+        query ? ilike(schools.name, `${query}%`) : undefined,
+        cursor ? gt(schools.id, cursor) : undefined,
+      ].filter(Boolean) as Parameters<typeof and>;
+
+      const whereClause =
+        conditions.length > 0
+          ? and(...(conditions as unknown as any[]))
+          : undefined;
+
+      const joined = await ctx.db
+        .select({
+          school: schools,
+          supplementsCount: sql<number>`COUNT(${supplements.id})`.mapWith(
+            Number,
+          ),
+        })
+        .from(schools)
+        .leftJoin(supplements, eq(schools.id, supplements.school_id))
+        .where(whereClause)
+        .groupBy(schools.id)
+        .orderBy(asc(schools.id))
+        .limit(limit);
+
+      const schoolIds = joined.map(({ school }) => school.id);
+
+      const joined2 = await ctx.db
+        .select({ deadline: deadlines })
+        .from(deadlines)
+        .where(
+          schoolIds.length > 0
+            ? inArray(deadlines.school_id, schoolIds)
+            : undefined,
+        );
+
+      const deadlineMap = new Map<number, (typeof deadlines.$inferSelect)[]>();
+      for (const { deadline } of joined2) {
+        if (!deadlineMap.has(deadline.school_id)) {
+          deadlineMap.set(deadline.school_id, []);
+        }
+        deadlineMap.get(deadline.school_id)!.push(deadline);
+      }
+
+      const records = joined.map(({ school, supplementsCount }) => ({
+        id: school.id,
+        name: school.name,
+        city: school.city,
+        state: school.state,
+        size: school.size,
+        tuition: school.tuition,
+        acceptance_rate: school.acceptance_rate,
+        deadlines: (
+          (deadlineMap.get(school.id)?.sort().reverse() as InferSelectModel<
+            typeof deadlines
+          >[]) ?? []
+        ).map((d) => ({
+          id: d.id,
+          application_type: d.application_type as 'RD' | 'EA' | 'ED' | 'ED2',
+          date: d.date,
+        })),
+        supplementsCount,
+        list_id: null as number | null,
+        list_entry_id: null as number | null,
+      }));
+
+      // If user_id provided, annotate each school with the user's list_id (if any)
+      if (input.user_id && schoolIds.length > 0) {
+        const entries = await ctx.db
+          .select({
+            id: list_entries.id,
+            school_id: list_entries.school_id,
+            list_id: list_entries.list_id,
+          })
+          .from(list_entries)
+          .where(
+            and(
+              eq(list_entries.user_id, input.user_id),
+              inArray(list_entries.school_id, schoolIds),
+            ),
+          );
+
+        const listBySchool = new Map<number, number>();
+        for (const entry of entries) {
+          listBySchool.set(entry.school_id, entry.list_id);
+        }
+
+        const entriesBySchool = new Map<number, number>();
+        for (const entry of entries) {
+          entriesBySchool.set(entry.school_id, entry.id);
+        }
+
+        for (const record of records) {
+          record.list_id = listBySchool.get(record.id) ?? null;
+          record.list_entry_id = entriesBySchool.get(record.id) ?? null;
+        }
+      }
+
+      const nextCursor =
+        records.length === limit ? records[records.length - 1]!.id : undefined;
+
+      return { items: records, nextCursor } as const;
     }),
 
   get_schools_dashboard_data: publicProcedure
