@@ -108,6 +108,8 @@ export function SchoolsDashboardDataTable<TData, TValue>({
     <div>
       <div className="flex items-center gap-4 py-4">
         <Input
+          id="dashboard-schools-filter"
+          name="dashboard-schools-filter"
           placeholder="Filter by school name..."
           value={
             (table.getColumn('school_name')?.getFilterValue() as string) ?? ''

@@ -60,6 +60,8 @@ export default function SchoolsList({
     return (
       <div className="p-4 max-w-2xl mx-auto w-[60vw] flex flex-col min-h-screen">
         <Input
+          id="schools-search"
+          name="schools-search"
           placeholder="Search schools..."
           value={query}
           onChange={(e) => {
@@ -77,6 +79,8 @@ export default function SchoolsList({
   return (
     <div className="p-4 max-w-2xl mx-auto w-[60vw] flex flex-col min-h-screen">
       <Input
+        id="schools-search"
+        name="schools-search"
         placeholder="Search schools..."
         value={query}
         onChange={(e) => {

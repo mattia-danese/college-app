@@ -132,6 +132,8 @@ export function SupplementsDashboardDataTable<TData, TValue>({
     <div>
       <div className="flex items-center gap-4 py-4">
         <Input
+          id="dashboard-supplements-filter"
+          name="dashboard-supplements-filter"
           placeholder="Filter by school name..."
           value={
             (table.getColumn('school_name')?.getFilterValue() as string) ?? ''
