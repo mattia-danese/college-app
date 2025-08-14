@@ -13,10 +13,10 @@
   - [x] add combobox for filteirng by list
   - [x] handle supplement title overflow (possibly school too)
   - [ ] ~~add dialog or hover card over supplement title and display all supplement information~~
-  - [ ] potentially make Complete By field date picker (will update exisitng event for supplement or create a new one with new date)
+  - [ ] make Complete By field date picker to update exisitng event for supplement or create a new one with new date | use modal to display event maker | update Complete By backend logic
 - [ ] Create schools dashboard
   - [x] school name, list, app type, deadline, # supplements
-  - [ ] make list cell a select field that populates with list of supplement and makes API to update and change list upon different selection
+  - [ ] make list and app. type columns with Select components to update list entries
 - [x] UI scaffolding
   - [x] Home Page, Search Page, My Lists + Calendar (pass auth as props + auth protect pages)
   - [x] Nav bar
