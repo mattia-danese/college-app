@@ -16,7 +16,8 @@ export default function SchoolsClient() {
   const user = useUserStore((s) => s.user);
 
   const utils = api.useUtils();
-  const createListEntry = api.list_entries.create_or_update.useMutation();
+  const createOrUpdateListEntry =
+    api.list_entries.create_or_update.useMutation();
 
   // revisit if multiple updates concurrently (set state to Set<number>)
   const [updatingSchoolId, setUpdatingSchoolId] = useState<number | null>(null);
@@ -54,9 +55,10 @@ export default function SchoolsClient() {
       },
     );
 
-  const handleAddSchoolToList = async (
+  const handleCreateOrUpdateListEntry = async (
     school_id: number,
     list_id: number,
+    deadline_id: number,
     schoolName: string,
   ) => {
     const queryInput = {
@@ -69,13 +71,18 @@ export default function SchoolsClient() {
 
     try {
       setUpdatingSchoolId(school_id);
-      await createListEntry.mutateAsync({
+      const result = await createOrUpdateListEntry.mutateAsync({
         user_id: user!.id,
         school_id,
         list_id,
+        deadline_id,
       });
 
-      toast.success(`${schoolName} was added to '${list!.name}'`);
+      if (result.action === 'created') {
+        toast.success(`${schoolName} was added to '${list!.name}'`);
+      } else {
+        toast.success(`Update successful!`);
+      }
     } catch (error) {
       toast.error(`Failed to add ${schoolName} to '${list!.name}'.`);
     } finally {
@@ -125,7 +132,7 @@ export default function SchoolsClient() {
         <SchoolsList
           schools={schools}
           lists={lists}
-          onSelectListChange={handleAddSchoolToList}
+          onListEntryChange={handleCreateOrUpdateListEntry}
           onRemoveSchoolFromList={handleRemoveSchoolFromList}
           updatingSchoolId={updatingSchoolId}
           query={query}

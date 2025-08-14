@@ -1,0 +1,2 @@
+ALTER TABLE "list_entries" ADD COLUMN "deadline_id" integer NOT NULL;--> statement-breakpoint
+ALTER TABLE "list_entries" ADD CONSTRAINT "list_entries_deadline_id_deadlines_id_fk" FOREIGN KEY ("deadline_id") REFERENCES "public"."deadlines"("id") ON DELETE cascade ON UPDATE no action;

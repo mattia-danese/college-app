@@ -100,6 +100,10 @@ export const list_entries = pgTable(
       .integer()
       .notNull()
       .references(() => schools.id, { onDelete: 'cascade' }),
+    deadline_id: d
+      .integer()
+      .notNull()
+      .references(() => deadlines.id, { onDelete: 'cascade' }),
     createdAt: d
       .timestamp('created_at', { withTimezone: true })
       .defaultNow()

@@ -20,14 +20,16 @@ interface SchoolsListProps {
     supplementsCount: number;
     list_id: number | null;
     list_entry_id: number | null;
+    deadline_id: number | null;
   }[];
   lists: {
     id: number;
     name: string;
   }[];
-  onSelectListChange: (
+  onListEntryChange: (
     school_id: number,
     list_id: number,
+    deadline_id: number,
     school_name: string,
   ) => void;
   onRemoveSchoolFromList: (
@@ -47,7 +49,7 @@ interface SchoolsListProps {
 export default function SchoolsList({
   schools,
   lists,
-  onSelectListChange,
+  onListEntryChange,
   onRemoveSchoolFromList,
   updatingSchoolId,
   query,
@@ -109,8 +111,9 @@ export default function SchoolsList({
               supplementsCount={school.supplementsCount}
               lists={lists}
               selectedListId={school.list_id}
+              selectedDeadlineId={school.deadline_id}
               listEntryId={school.list_entry_id}
-              onSelectListChange={onSelectListChange}
+              onListEntryChange={onListEntryChange}
               onRemoveSchoolFromList={onRemoveSchoolFromList}
               disabled={updatingSchoolId === school.id}
             />

@@ -14,6 +14,7 @@ import {
 
 import { Button } from '~/components/ui/button';
 import { X } from 'lucide-react';
+import { useState } from 'react';
 
 interface SchoolsListItemProps {
   id: number;
@@ -35,10 +36,12 @@ interface SchoolsListItemProps {
     name: string;
   }[];
   selectedListId: number | null;
+  selectedDeadlineId: number | null;
   listEntryId: number | null;
-  onSelectListChange: (
+  onListEntryChange: (
     school_id: number,
     list_id: number,
+    deadline_id: number,
     school_name: string,
   ) => void;
   onRemoveSchoolFromList: (
@@ -63,11 +66,15 @@ export default function SchoolsListItem({
 
   lists,
   selectedListId,
+  selectedDeadlineId,
   listEntryId,
-  onSelectListChange,
+  onListEntryChange,
   onRemoveSchoolFromList,
   disabled,
 }: SchoolsListItemProps) {
+  const [selectList, setSelectList] = useState(selectedListId);
+  const [selectDeadline, setSelectDeadline] = useState(selectedDeadlineId);
+
   return (
     <Card key={id} className="mb-4">
       <CardContent className="p-4 grid grid-cols-2 gap-4">
@@ -98,9 +105,11 @@ export default function SchoolsListItem({
         <div className="flex items-center gap-2">
           <Select
             onValueChange={(item) => {
-              onSelectListChange(id, parseInt(item), name);
+              setSelectList(parseInt(item));
+              if (selectDeadline === null) return;
+              onListEntryChange(id, parseInt(item), selectDeadline, name);
             }}
-            value={selectedListId !== null ? selectedListId.toString() : ''}
+            value={selectList?.toString() ?? ''}
           >
             <SelectTrigger className="w-[180px]" disabled={disabled}>
               {disabled ? (
@@ -120,11 +129,39 @@ export default function SchoolsListItem({
               </SelectGroup>
             </SelectContent>
           </Select>
+          <Select
+            onValueChange={(item) => {
+              setSelectDeadline(parseInt(item));
+              if (selectList === null) return;
+              onListEntryChange(id, selectList, parseInt(item), name);
+            }}
+            value={selectDeadline?.toString() ?? ''}
+          >
+            <SelectTrigger className="w-[180px]" disabled={disabled}>
+              {disabled ? (
+                <Spinner />
+              ) : (
+                <SelectValue placeholder="Pick a app. type" />
+              )}
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectLabel>Deadlines</SelectLabel>
+                {deadlines.map((deadline) => (
+                  <SelectItem key={deadline.id} value={deadline.id.toString()}>
+                    {deadline.application_type}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
           {selectedListId !== null && !disabled && (
             <Button
               variant="ghost"
               className="text-muted-foreground hover:text-foreground"
               onClick={() => {
+                setSelectList(null);
+                setSelectDeadline(null);
                 onRemoveSchoolFromList(id, listEntryId!, name, selectedListId!);
               }}
             >

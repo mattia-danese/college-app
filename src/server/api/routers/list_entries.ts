@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import { z } from 'zod';
 
 import { createTRPCRouter, publicProcedure } from '~/server/api/trpc';
@@ -11,23 +11,42 @@ export const listEntriesRouter = createTRPCRouter({
         user_id: z.number().int().positive(),
         list_id: z.number().int().positive(),
         school_id: z.number().int().positive(),
+        deadline_id: z.number().int().positive(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      await ctx.db
+      const rows = await ctx.db
         .insert(list_entries)
         .values({
           user_id: input.user_id,
           list_id: input.list_id,
           school_id: input.school_id,
+          deadline_id: input.deadline_id,
         })
         .onConflictDoUpdate({
           target: [list_entries.user_id, list_entries.school_id],
           set: {
             list_id: input.list_id,
+            deadline_id: input.deadline_id,
             updatedAt: new Date(),
           },
+        })
+        .returning({
+          id: list_entries.id,
+          wasInserted: sql<boolean>`(xmax = 0)`,
         });
+
+      const result = rows[0];
+      if (!result) {
+        throw new Error(
+          `Failed to create or update list entry. user_id: ${input.user_id} school_id: ${input.school_id} list_id: ${input.list_id} deadline_id: ${input.deadline_id}`,
+        );
+      }
+
+      return {
+        list_entry_id: result.id,
+        action: result.wasInserted ? 'created' : 'updated',
+      } as const;
     }),
 
   get: publicProcedure

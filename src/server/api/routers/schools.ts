@@ -218,6 +218,7 @@ export const schoolsRouter = createTRPCRouter({
         supplementsCount,
         list_id: null as number | null,
         list_entry_id: null as number | null,
+        deadline_id: null as number | null,
       }));
 
       // If user_id provided, annotate each school with the user's list_id (if any)
@@ -227,6 +228,7 @@ export const schoolsRouter = createTRPCRouter({
             id: list_entries.id,
             school_id: list_entries.school_id,
             list_id: list_entries.list_id,
+            deadline_id: list_entries.deadline_id,
           })
           .from(list_entries)
           .where(
@@ -237,18 +239,19 @@ export const schoolsRouter = createTRPCRouter({
           );
 
         const listBySchool = new Map<number, number>();
+        const entriesBySchool = new Map<number, number>();
+        const deadlineBySchool = new Map<number, number>();
+
         for (const entry of entries) {
           listBySchool.set(entry.school_id, entry.list_id);
-        }
-
-        const entriesBySchool = new Map<number, number>();
-        for (const entry of entries) {
           entriesBySchool.set(entry.school_id, entry.id);
+          deadlineBySchool.set(entry.school_id, entry.deadline_id);
         }
 
         for (const record of records) {
           record.list_id = listBySchool.get(record.id) ?? null;
           record.list_entry_id = entriesBySchool.get(record.id) ?? null;
+          record.deadline_id = deadlineBySchool.get(record.id) ?? null;
         }
       }
 
