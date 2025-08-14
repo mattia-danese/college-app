@@ -33,7 +33,10 @@
   - [ ] make only public page
 - [ ] Tidying up UI + Extras
   - [x] Dark mode
-- [ ] Google Calendar & Apple Calendar integration
+- [ ] Improved Calendar functionality
+  - [ ] drag & drop in calendar updates calendar event
+  - [ ] edit calendar event directly in calendar
+  - [ ] Google Calendar & Apple Calendar integration
 - [ ] Deploy
 - [ ] Create scraper
 
