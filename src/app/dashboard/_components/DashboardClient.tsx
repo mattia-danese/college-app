@@ -17,6 +17,8 @@ import { useUserStore } from '~/stores/useUserStore';
 import { useMemo } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs';
 
+import { CircularProgress } from '~/components/CircularProgress';
+
 export default function DashboardClient() {
   const user = useUserStore((s) => s.user);
 
@@ -55,9 +57,15 @@ export default function DashboardClient() {
 
   const totalSchools = schoolsData.length;
   const totalSupplements = supplementsData.length;
+
   const completedSupplements = supplementsData.filter(
     (item: any) => item.status === 'Completed',
   ).length;
+
+  const percent =
+    totalSupplements > 0
+      ? Math.round((completedSupplements / totalSupplements) * 100)
+      : 0;
 
   return (
     <div className="flex flex-col items-center min-h-screen py-8">
@@ -69,7 +77,7 @@ export default function DashboardClient() {
           </TabsList>
         </div>
 
-        <div className="mb-6 p-6 bg-gradient-to-r from-muted/50 to-accent/30 rounded-lg border border-border">
+        <div className="mb-6 p-6 bg-gradient-to-r from-muted/50 to-accent/30 rounded-lg border border-border flex flex-col items-center gap-4">
           <h2 className="text-xl font-semibold text-foreground">
             You are applying to{' '}
             <span className="text-primary font-bold">{totalSchools}</span>{' '}
@@ -83,6 +91,7 @@ export default function DashboardClient() {
             </span>{' '}
             supplements!
           </h2>
+          {/* <CircularProgress value={percent} className="mt-4" /> */}
         </div>
 
         <TabsContent value="supplement" className="w-full">
