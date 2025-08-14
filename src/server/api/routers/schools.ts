@@ -281,7 +281,7 @@ export const schoolsRouter = createTRPCRouter({
         .innerJoin(schools, eq(schools.id, supplements.school_id))
         .innerJoin(list_entries, eq(list_entries.school_id, schools.id))
         .innerJoin(lists, eq(lists.id, list_entries.list_id))
-        .innerJoin(deadlines, eq(deadlines.school_id, schools.id))
+        .innerJoin(deadlines, eq(list_entries.deadline_id, deadlines.id))
         .where(eq(lists.user_id, input.user_id))
         .groupBy(
           schools.id,
@@ -291,6 +291,39 @@ export const schoolsRouter = createTRPCRouter({
           deadlines.date,
         );
 
+      const all_school_ids = records.map((record) => record.school_id);
+
+      const all_deadlines = await ctx.db
+        .select({
+          id: deadlines.id,
+          school_id: deadlines.school_id,
+          application_type: deadlines.application_type,
+          date: deadlines.date,
+        })
+        .from(deadlines)
+        .where(inArray(deadlines.school_id, all_school_ids));
+
+      const deadlineMap = new Map<
+        number,
+        {
+          id: number;
+          school_id: number;
+          application_type: 'RD' | 'EA' | 'ED' | 'ED2';
+          date: Date;
+        }[]
+      >();
+      for (const { id, school_id, application_type, date } of all_deadlines) {
+        if (!deadlineMap.has(school_id)) {
+          deadlineMap.set(school_id, []);
+        }
+        deadlineMap.get(school_id)!.push({
+          id,
+          school_id,
+          application_type: application_type as 'RD' | 'EA' | 'ED' | 'ED2',
+          date,
+        });
+      }
+
       return records.map((record) => ({
         id: record.school_id.toString(),
         school_name: record.school_name,
@@ -298,6 +331,7 @@ export const schoolsRouter = createTRPCRouter({
         application_type: record.application_type as 'RD' | 'EA' | 'ED' | 'ED2',
         deadline: record.deadline_date,
         num_supplements: record.num_supplements,
+        all_deadlines: deadlineMap.get(record.school_id)!.sort().reverse(),
       }));
     }),
 });

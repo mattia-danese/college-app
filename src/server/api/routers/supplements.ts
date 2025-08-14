@@ -177,7 +177,7 @@ export const supplementsRouter = createTRPCRouter({
         .innerJoin(schools, eq(schools.id, supplements.school_id))
         .innerJoin(list_entries, eq(list_entries.school_id, schools.id))
         .innerJoin(lists, eq(lists.id, list_entries.list_id))
-        .innerJoin(deadlines, eq(deadlines.school_id, schools.id))
+        .innerJoin(deadlines, eq(list_entries.deadline_id, deadlines.id))
         .where(eq(lists.user_id, input.user_id));
 
       return records.map((record) => ({

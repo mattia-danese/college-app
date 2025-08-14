@@ -160,7 +160,7 @@ export const calendarEventsRouter = createTRPCRouter({
         .from(lists)
         .innerJoin(list_entries, eq(list_entries.list_id, lists.id))
         .innerJoin(schools, eq(list_entries.school_id, schools.id))
-        .innerJoin(deadlines, eq(schools.id, deadlines.school_id))
+        .innerJoin(deadlines, eq(list_entries.deadline_id, deadlines.id))
         .innerJoin(supplements, eq(schools.id, supplements.school_id))
         .leftJoin(
           calendar_events,
