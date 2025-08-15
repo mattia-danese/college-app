@@ -13,10 +13,15 @@ export const listsRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      await ctx.db.insert(lists).values({
-        name: input.name,
-        user_id: input.user_id,
-      });
+      const [result] = await ctx.db
+        .insert(lists)
+        .values({
+          name: input.name,
+          user_id: input.user_id,
+        })
+        .returning();
+
+      return result;
     }),
 
   get: publicProcedure

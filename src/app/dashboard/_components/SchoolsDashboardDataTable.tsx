@@ -32,6 +32,7 @@ interface DataTableProps<TData, TValue> {
   data: TData[];
   listOptions: { id: string; name: string }[];
   applicationTypeOptions: { id: string; name: string }[];
+  handleCreateList: (name: string) => void;
 }
 
 export function SchoolsDashboardDataTable<TData, TValue>({
@@ -39,6 +40,7 @@ export function SchoolsDashboardDataTable<TData, TValue>({
   data,
   listOptions,
   applicationTypeOptions,
+  handleCreateList,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);

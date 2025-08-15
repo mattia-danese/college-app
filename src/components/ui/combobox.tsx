@@ -19,7 +19,7 @@ import {
   PopoverTrigger,
 } from '~/components/ui/popover';
 
-interface ComboboxProps {
+interface MultiComboboxProps {
   options: { id: string; name: string }[];
   selectedValues: string[];
   onSelectionChange: (values: string[]) => void;
@@ -27,6 +27,8 @@ interface ComboboxProps {
   emptyText?: string;
   buttonText?: string;
   concise?: boolean;
+  doesCreate?: boolean;
+  handleCreate?: (value: string) => void;
 }
 
 export function MultiCombobox({
@@ -37,8 +39,11 @@ export function MultiCombobox({
   emptyText = 'No options found.',
   buttonText = 'Select options...',
   concise = true,
-}: ComboboxProps) {
+  doesCreate = false,
+  handleCreate,
+}: MultiComboboxProps) {
   const [open, setOpen] = React.useState(false);
+  const [inputValue, setInputValue] = React.useState('');
 
   const handleSelect = (value: string) => {
     const newSelection = selectedValues.includes(value)
@@ -46,6 +51,22 @@ export function MultiCombobox({
       : [...selectedValues, value];
     onSelectionChange(newSelection);
   };
+
+  const handleCreateNew = () => {
+    if (handleCreate && inputValue.trim()) {
+      handleCreate(inputValue.trim());
+      setInputValue('');
+      setOpen(false);
+    }
+  };
+
+  const filteredOptions = options.filter((option) =>
+    option.name.toLowerCase().includes(inputValue.toLowerCase()),
+  );
+
+  const hasExactMatch = options.some(
+    (option) => option.name.toLowerCase() === inputValue.toLowerCase(),
+  );
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -82,10 +103,30 @@ export function MultiCombobox({
       </PopoverTrigger>
       <PopoverContent className="p-0">
         <Command>
-          <CommandInput placeholder={placeholder} />
-          <CommandEmpty>{emptyText}</CommandEmpty>
+          <CommandInput
+            placeholder={placeholder}
+            value={inputValue}
+            onValueChange={setInputValue}
+          />
+          {doesCreate &&
+          inputValue.trim() &&
+          !hasExactMatch &&
+          filteredOptions.length === 0 ? (
+            <div className="p-1">
+              <Button
+                variant="ghost"
+                className="w-full justify-start h-8 px-2 text-sm"
+                onClick={handleCreateNew}
+              >
+                <Plus className="mr-2 h-1 w-1" />
+                Add "{inputValue.trim()}"
+              </Button>
+            </div>
+          ) : (
+            <CommandEmpty>{emptyText}</CommandEmpty>
+          )}
           <CommandGroup>
-            {options.map((option) => (
+            {filteredOptions.map((option) => (
               <CommandItem
                 key={option.id}
                 value={option.name}
@@ -97,6 +138,125 @@ export function MultiCombobox({
                     selectedValues.includes(option.name)
                       ? 'opacity-100'
                       : 'opacity-0',
+                  )}
+                />
+                {option.name}
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+interface SingleComboboxProps {
+  options: { id: string; name: string }[];
+  selectedValue: string;
+  onSelectionChange: (value: string) => void;
+  placeholder?: string;
+  emptyText?: string;
+  buttonText?: string;
+  doesCreate?: boolean;
+  handleCreate?: (value: string) => void;
+}
+
+export function SingleCombobox({
+  options,
+  selectedValue,
+  onSelectionChange,
+  placeholder = 'Select option...',
+  emptyText = 'No options found.',
+  buttonText = 'Select option...',
+  doesCreate = false,
+  handleCreate,
+}: SingleComboboxProps) {
+  const [open, setOpen] = React.useState(false);
+  const [inputValue, setInputValue] = React.useState('');
+
+  const handleSelect = (value: string) => {
+    const newSelection = selectedValue === value ? '' : value;
+    onSelectionChange(newSelection);
+    setOpen(false);
+  };
+
+  const handleCreateNew = () => {
+    if (handleCreate && inputValue.trim()) {
+      handleCreate(inputValue.trim());
+      onSelectionChange(inputValue.trim());
+      setInputValue('');
+      setOpen(false);
+    }
+  };
+
+  const filteredOptions = options.filter((option) =>
+    option.name.toLowerCase().includes(inputValue.toLowerCase()),
+  );
+
+  const hasExactMatch = options.some(
+    (option) => option.name.toLowerCase() === inputValue.toLowerCase(),
+  );
+
+  const getDisplayText = () => {
+    if (!selectedValue) {
+      return buttonText.replace('+ ', '');
+    }
+    return selectedValue;
+  };
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          className="justify-between"
+        >
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
+              {selectedValue ? <></> : <Plus className="h-4 w-4" />}
+              <span>{getDisplayText()}</span>
+            </div>
+          </div>
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="p-0">
+        <Command>
+          <CommandInput
+            placeholder={placeholder}
+            value={inputValue}
+            onValueChange={setInputValue}
+          />
+          {doesCreate &&
+          inputValue.trim() &&
+          !hasExactMatch &&
+          filteredOptions.length === 0 ? (
+            <div className="p-1">
+              <Button
+                variant="ghost"
+                className="w-full justify-start h-8 px-2 text-sm"
+                onClick={handleCreateNew}
+              >
+                <Plus className="mr-2 h-1 w-1" />
+                Add "{inputValue.trim()}"
+              </Button>
+            </div>
+          ) : (
+            <CommandEmpty>{emptyText}</CommandEmpty>
+          )}
+          <CommandGroup>
+            {filteredOptions.map((option) => (
+              <CommandItem
+                key={option.id}
+                value={option.name}
+                onSelect={() => handleSelect(option.name)}
+              >
+                <Check
+                  className={cn(
+                    'mr-2 h-4 w-4',
+                    selectedValue === option.name ? 'opacity-100' : 'opacity-0',
                   )}
                 />
                 {option.name}

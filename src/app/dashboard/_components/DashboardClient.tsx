@@ -19,6 +19,7 @@ import { useMemo } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs';
 
 import { CircularProgress } from '~/components/CircularProgress';
+import { toast } from 'sonner';
 
 export default function DashboardClient() {
   const user = useUserStore((s) => s.user);
@@ -80,6 +81,38 @@ export default function DashboardClient() {
       ? Math.round((completedSupplements / totalSupplements) * 100)
       : 0;
 
+  const createList = api.lists.create.useMutation();
+  const utils = api.useUtils();
+
+  const handleCreateList = async (name: string) => {
+    try {
+      const result = await createList.mutateAsync({
+        name: name,
+        user_id: user?.id ?? 0,
+      });
+
+      toast.success(`List ${name} created successfully`);
+
+      // Optimistically update the schools data to include the new list
+      if (result) {
+        utils.schools.get_schools_dashboard_data.setData(
+          { user_id: user!.id },
+          (oldData) => {
+            if (!oldData) return oldData;
+            return {
+              ...oldData,
+              lists: [...oldData.lists, { id: result.id, name: result.name }],
+            };
+          },
+        );
+      }
+    } catch (error) {
+      toast.error(`Failed to create list ${name}`);
+      // Revert optimistic update on error
+      await utils.schools.get_schools_dashboard_data.invalidate();
+    }
+  };
+
   return (
     <div className="flex flex-col items-center min-h-screen py-8">
       <Tabs defaultValue="supplement" className="w-full max-w-6xl">
@@ -123,6 +156,7 @@ export default function DashboardClient() {
             data={schoolsData?.schools ?? []}
             listOptions={allListOptions}
             applicationTypeOptions={allApplicationTypeOptions}
+            handleCreateList={handleCreateList}
           />
         </TabsContent>
       </Tabs>
