@@ -272,7 +272,9 @@ export const schoolsRouter = createTRPCRouter({
         .select({
           school_id: schools.id,
           school_name: schools.name,
+          list_id: lists.id,
           list_name: lists.name,
+          deadline_id: deadlines.id,
           application_type: deadlines.application_type,
           deadline_date: deadlines.date,
           num_supplements: sql<number>`count(${supplements.id})`,
@@ -289,6 +291,8 @@ export const schoolsRouter = createTRPCRouter({
           lists.name,
           deadlines.application_type,
           deadlines.date,
+          lists.id,
+          deadlines.id,
         );
 
       const all_school_ids = records.map((record) => record.school_id);
@@ -324,14 +328,31 @@ export const schoolsRouter = createTRPCRouter({
         });
       }
 
-      return records.map((record) => ({
-        id: record.school_id.toString(),
-        school_name: record.school_name,
-        list_name: record.list_name,
-        application_type: record.application_type as 'RD' | 'EA' | 'ED' | 'ED2',
-        deadline: record.deadline_date,
-        num_supplements: record.num_supplements,
-        all_deadlines: deadlineMap.get(record.school_id)!.sort().reverse(),
-      }));
+      const all_lists = await ctx.db
+        .select({
+          id: lists.id,
+          name: lists.name,
+        })
+        .from(lists)
+        .where(eq(lists.user_id, input.user_id));
+
+      return {
+        schools: records.map((record) => ({
+          id: record.school_id.toString(),
+          school_name: record.school_name,
+          list_id: record.list_id,
+          list_name: record.list_name,
+          application_type: record.application_type as
+            | 'RD'
+            | 'EA'
+            | 'ED'
+            | 'ED2',
+          deadline: record.deadline_date,
+          deadline_id: record.deadline_id,
+          num_supplements: record.num_supplements,
+          all_deadlines: deadlineMap.get(record.school_id)!.sort().reverse(),
+        })),
+        lists: all_lists,
+      };
     }),
 });

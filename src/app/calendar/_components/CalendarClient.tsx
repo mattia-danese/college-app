@@ -57,8 +57,8 @@ export default function CalendarClient() {
   const listOptions = useMemo(() => {
     const uniqueLists = Array.from(new Set(userLists.map((list) => list.name)));
     return uniqueLists.map((listName) => ({
-      value: listName,
-      label: listName,
+      id: listName,
+      name: listName,
     }));
   }, [userLists]);
 

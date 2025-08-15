@@ -30,13 +30,15 @@ import { X } from 'lucide-react';
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
-  listOptions: { value: string; label: string }[];
+  listOptions: { id: string; name: string }[];
+  applicationTypeOptions: { id: string; name: string }[];
 }
 
 export function SchoolsDashboardDataTable<TData, TValue>({
   columns,
   data,
   listOptions,
+  applicationTypeOptions,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -44,13 +46,6 @@ export function SchoolsDashboardDataTable<TData, TValue>({
   const [selectedApplicationTypes, setSelectedApplicationTypes] = useState<
     string[]
   >([]);
-
-  const applicationTypeOptions = [
-    { value: 'RD', label: 'RD' },
-    { value: 'EA', label: 'EA' },
-    { value: 'ED', label: 'ED' },
-    { value: 'ED2', label: 'ED2' },
-  ];
 
   // Filter data based on selected lists, statuses, and application types
   const filteredData = useMemo(() => {

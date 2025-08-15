@@ -2,6 +2,7 @@
 
 import {
   columns as supplementsColumns,
+  type Status,
   type SupplementsDashboardRow,
 } from './SupplementsDashboardColumns';
 import { SupplementsDashboardDataTable } from './SupplementsDashboardDataTable';
@@ -34,7 +35,7 @@ export default function DashboardClient() {
     );
 
   // Fetch schools data for school view
-  const { data: schoolsData = [], isLoading: isSchoolsLoading } =
+  const { data: schoolsData, isLoading: isSchoolsLoading } =
     api.schools.get_schools_dashboard_data.useQuery(
       {
         user_id: user?.id ?? 0,
@@ -44,18 +45,30 @@ export default function DashboardClient() {
       },
     );
 
-  // Extract unique list names from schools data
-  const listOptions = useMemo(() => {
-    const uniqueLists = Array.from(
-      new Set(schoolsData.map((item) => item.list_name)),
+  const allListOptions = useMemo(() => {
+    return (
+      schoolsData?.lists.map((item) => ({
+        id: item.id.toString(),
+        name: item.name,
+      })) ?? []
     );
-    return uniqueLists.map((listName) => ({
-      value: listName,
-      label: listName,
-    }));
   }, [schoolsData]);
 
-  const totalSchools = schoolsData.length;
+  const allApplicationTypeOptions = [
+    { id: 'RD', name: 'RD' },
+    { id: 'EA', name: 'EA' },
+    { id: 'ED', name: 'ED' },
+    { id: 'ED2', name: 'ED2' },
+  ];
+
+  const allStatusOptions = (
+    ['Completed', 'In Progress', 'Planned', 'Not Planned'] satisfies Status[]
+  ).map((status) => ({
+    id: status,
+    name: status,
+  }));
+
+  const totalSchools = schoolsData?.schools.length ?? 0;
   const totalSupplements = supplementsData.length;
 
   const completedSupplements = supplementsData.filter(
@@ -98,15 +111,18 @@ export default function DashboardClient() {
           <SupplementsDashboardDataTable
             columns={supplementsColumns}
             data={supplementsData}
-            listOptions={listOptions}
+            listOptions={allListOptions}
+            applicationTypeOptions={allApplicationTypeOptions}
+            statusOptions={allStatusOptions}
           />
         </TabsContent>
 
         <TabsContent value="school" className="w-full">
           <SchoolsDashboardDataTable
             columns={schoolsColumns}
-            data={schoolsData}
-            listOptions={listOptions}
+            data={schoolsData?.schools ?? []}
+            listOptions={allListOptions}
+            applicationTypeOptions={allApplicationTypeOptions}
           />
         </TabsContent>
       </Tabs>

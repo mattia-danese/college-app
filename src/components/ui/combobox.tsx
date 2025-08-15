@@ -20,7 +20,7 @@ import {
 } from '~/components/ui/popover';
 
 interface ComboboxProps {
-  options: { value: string; label: string }[];
+  options: { id: string; name: string }[];
   selectedValues: string[];
   onSelectionChange: (values: string[]) => void;
   placeholder?: string;
@@ -87,19 +87,19 @@ export function MultiCombobox({
           <CommandGroup>
             {options.map((option) => (
               <CommandItem
-                key={option.value}
-                value={option.value}
-                onSelect={() => handleSelect(option.value)}
+                key={option.id}
+                value={option.name}
+                onSelect={() => handleSelect(option.name)}
               >
                 <Check
                   className={cn(
                     'mr-2 h-4 w-4',
-                    selectedValues.includes(option.value)
+                    selectedValues.includes(option.name)
                       ? 'opacity-100'
                       : 'opacity-0',
                   )}
                 />
-                {option.label}
+                {option.name}
               </CommandItem>
             ))}
           </CommandGroup>
