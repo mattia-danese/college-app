@@ -5,6 +5,7 @@ import { MoreHorizontal, ArrowUpDown } from 'lucide-react';
 
 import { Button } from '~/components/ui/button';
 import { format } from 'date-fns';
+import { SingleCombobox } from '~/components/ui/combobox';
 
 // This type is used to define the shape of our data.
 // You can use a Zod schema here if you want.
@@ -17,10 +18,21 @@ export type SchoolsDashboardRow = {
   list_name: string;
   application_type: string;
   deadline: Date;
+  deadline_id: number;
   num_supplements: number;
 };
 
-export const columns: ColumnDef<SchoolsDashboardRow>[] = [
+export const columns = (
+  handleCreateList: (name: string) => Promise<any>,
+  handleUpdateListEntry: (
+    school_id: number,
+    list_id: number,
+    deadline_id: number,
+    schoolName: string,
+    showToast: boolean,
+  ) => void,
+  lists: { id: string; name: string }[],
+): ColumnDef<SchoolsDashboardRow>[] => [
   {
     accessorKey: 'school_name',
     header: ({ column }) => {
@@ -53,6 +65,45 @@ export const columns: ColumnDef<SchoolsDashboardRow>[] = [
           List
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
+      );
+    },
+    cell: ({ row }) => {
+      return (
+        <SingleCombobox
+          options={lists}
+          placeholder="Select a list"
+          selectedValue={row.original.list_name}
+          onSelectionChange={(value) => {
+            const selectedList = lists.find((l) => l.name === value);
+
+            // If the list doesn't exist, it means it's a newly created list
+            // The handleCreate callback will handle the list creation
+            if (!selectedList) {
+              return;
+            }
+
+            handleUpdateListEntry(
+              Number(row.original.id),
+              Number(selectedList.id),
+              Number(row.original.deadline_id),
+              row.original.school_name,
+              true,
+            );
+          }}
+          doesCreate={true}
+          handleCreate={async (name) => {
+            const result = await handleCreateList(name);
+            if (result) {
+              handleUpdateListEntry(
+                Number(row.original.id),
+                result.id,
+                Number(row.original.deadline_id),
+                row.original.school_name,
+                false,
+              );
+            }
+          }}
+        />
       );
     },
   },

@@ -23,6 +23,7 @@ import { toast } from 'sonner';
 
 export default function DashboardClient() {
   const user = useUserStore((s) => s.user);
+  const utils = api.useUtils();
 
   // Fetch supplements data for supplement view
   const { data: supplementsData = [], isLoading: isSupplementsLoading } =
@@ -82,7 +83,6 @@ export default function DashboardClient() {
       : 0;
 
   const createList = api.lists.create.useMutation();
-  const utils = api.useUtils();
 
   const handleCreateList = async (name: string) => {
     try {
@@ -106,9 +106,62 @@ export default function DashboardClient() {
           },
         );
       }
+
+      return result;
     } catch (error) {
       toast.error(`Failed to create list ${name}`);
       // Revert optimistic update on error
+      await utils.schools.get_schools_dashboard_data.invalidate();
+      return null;
+    }
+  };
+
+  const createOrUpdateListEntry =
+    api.list_entries.create_or_update.useMutation();
+
+  const handleUpdateListEntry = async (
+    school_id: number,
+    list_id: number,
+    deadline_id: number,
+    schoolName: string,
+    showToast: boolean = true,
+  ) => {
+    const list = allListOptions.find((l) => l.id === list_id.toString());
+    const newListName = list?.name;
+
+    // Optimistically update the cached data
+    utils.schools.get_schools_dashboard_data.setData(
+      { user_id: user!.id },
+      (oldData) => {
+        if (!oldData) return oldData;
+        return {
+          ...oldData,
+          schools: oldData.schools.map((school) =>
+            school.id === school_id.toString()
+              ? { ...school, list_name: newListName || school.list_name }
+              : school,
+          ),
+        };
+      },
+    );
+
+    try {
+      await createOrUpdateListEntry.mutateAsync({
+        user_id: user!.id,
+        school_id,
+        list_id,
+        deadline_id,
+      });
+
+      if (showToast) {
+        toast.success(`Update successful!`);
+      }
+    } catch (error) {
+      if (showToast) {
+        toast.error(`Failed to add ${schoolName} to '${newListName}'.`);
+      }
+    } finally {
+      // Ensure the UI reflects the changes
       await utils.schools.get_schools_dashboard_data.invalidate();
     }
   };
@@ -152,7 +205,11 @@ export default function DashboardClient() {
 
         <TabsContent value="school" className="w-full">
           <SchoolsDashboardDataTable
-            columns={schoolsColumns}
+            columns={schoolsColumns(
+              handleCreateList,
+              handleUpdateListEntry,
+              allListOptions,
+            )}
             data={schoolsData?.schools ?? []}
             listOptions={allListOptions}
             applicationTypeOptions={allApplicationTypeOptions}
