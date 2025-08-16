@@ -168,6 +168,50 @@ export default function DashboardClient() {
     }
   };
 
+  const createEvent = api.calendar_events.create.useMutation({
+    onSuccess: () => {
+      toast.success('Event created successfully');
+      // Only invalidate on success to ensure the optimistic update stays
+      utils.supplements.get_supplements_dashboard_data.invalidate();
+    },
+    onError: () => {
+      toast.error('Failed to create event');
+      // Revert optimistic update on error
+      utils.supplements.get_supplements_dashboard_data.invalidate();
+    },
+  });
+
+  const handleCreateEvent = (
+    supplement_id: number,
+    title: string,
+    description: string,
+    start: Date,
+    end: Date,
+  ) => {
+    // Optimistically update the supplements data to show the new event
+    utils.supplements.get_supplements_dashboard_data.setData(
+      { user_id: user!.id },
+      (oldData) => {
+        if (!oldData) return oldData;
+        return oldData.map((supplement) =>
+          supplement.id === supplement_id.toString()
+            ? { ...supplement, complete_by: start }
+            : supplement,
+        );
+      },
+    );
+
+    createEvent.mutate({
+      user_id: user!.id,
+      supplement_id,
+      deadline_id: null,
+      title,
+      description,
+      start,
+      end,
+    });
+  };
+
   return (
     <div className="flex flex-col items-center min-h-screen py-8">
       <Tabs defaultValue="school" className="w-full max-w-6xl">
@@ -211,7 +255,7 @@ export default function DashboardClient() {
 
         <TabsContent value="supplement" className="w-full">
           <SupplementsDashboardDataTable
-            columns={supplementsColumns}
+            columns={supplementsColumns(handleCreateEvent)}
             data={supplementsData}
             listOptions={allListOptions}
             applicationTypeOptions={allApplicationTypeOptions}

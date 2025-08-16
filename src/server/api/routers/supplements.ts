@@ -184,13 +184,12 @@ export const supplementsRouter = createTRPCRouter({
         id: record.supplement_id.toString(),
         school_name: record.school_name,
         list_name: record.list_name,
-        application_type: record.application_type ?? 'RD',
+        application_type: record.application_type as 'RD' | 'EA' | 'ED' | 'ED2',
         deadline: record.deadline_date,
         supplement_prompt: record.prompt,
-        complete_by:
-          record.calendar_event_id && record.calendar_event_end
-            ? record.calendar_event_end
-            : record.deadline_date,
+        supplement_description: record.description,
+        supplement_word_count: Number(record.word_count),
+        complete_by: record.calendar_event_end ?? null,
         status: (() => {
           const now = new Date();
           if (

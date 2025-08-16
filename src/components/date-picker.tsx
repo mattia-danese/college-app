@@ -7,11 +7,6 @@ import { Button } from '~/components/ui/button';
 import { Calendar } from '~/components/ui/calendar';
 import { Input } from '~/components/ui/input';
 import { Label } from '~/components/ui/label';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '~/components/ui/popover';
 
 interface DateTimePickerProps {
   value?: Date;
@@ -33,6 +28,8 @@ export function DateTimePicker({
   const [time, setTime] = React.useState<string>(
     value ? value.toTimeString().slice(0, 5) : '10:30',
   );
+  const calendarRef = React.useRef<HTMLDivElement>(null);
+  const buttonRef = React.useRef<HTMLButtonElement>(null);
 
   // Update internal state when value prop changes
   React.useEffect(() => {
@@ -41,6 +38,26 @@ export function DateTimePicker({
       setTime(value.toTimeString().slice(0, 5));
     }
   }, [value]);
+
+  // Handle click outside to close calendar
+  React.useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        open &&
+        calendarRef.current &&
+        buttonRef.current &&
+        !calendarRef.current.contains(event.target as Node) &&
+        !buttonRef.current.contains(event.target as Node)
+      ) {
+        setOpen(false);
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [open]);
 
   const handleDateChange = (newDate: Date | undefined) => {
     if (newDate) {
@@ -73,26 +90,32 @@ export function DateTimePicker({
         <Label htmlFor={`date-${id}`} className="px-1">
           {dateLabel}
         </Label>
-        <Popover open={open} onOpenChange={setOpen}>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              id={`date-${id}`}
-              className="w-32 justify-between font-normal"
+        <div className="relative">
+          <Button
+            ref={buttonRef}
+            variant="outline"
+            id={`date-${id}`}
+            className="w-32 justify-between font-normal"
+            type="button"
+            onClick={() => setOpen(!open)}
+          >
+            {date ? date.toLocaleDateString() : 'Select date'}
+            <ChevronDownIcon />
+          </Button>
+          {open && (
+            <div
+              ref={calendarRef}
+              className="absolute top-full left-0 mt-1 z-[9999] bg-popover border rounded-md shadow-lg p-3"
             >
-              {date ? date.toLocaleDateString() : 'Select date'}
-              <ChevronDownIcon />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto overflow-hidden p-0" align="start">
-            <Calendar
-              mode="single"
-              selected={date}
-              captionLayout="dropdown"
-              onSelect={handleDateChange}
-            />
-          </PopoverContent>
-        </Popover>
+              <Calendar
+                mode="single"
+                selected={date}
+                captionLayout="dropdown"
+                onSelect={handleDateChange}
+              />
+            </div>
+          )}
+        </div>
       </div>
       <div className="flex flex-col gap-3">
         <Label htmlFor={`time-${id}`} className="px-1">
