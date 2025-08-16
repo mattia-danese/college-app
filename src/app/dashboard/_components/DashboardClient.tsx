@@ -168,11 +168,11 @@ export default function DashboardClient() {
 
   return (
     <div className="flex flex-col items-center min-h-screen py-8">
-      <Tabs defaultValue="supplement" className="w-full max-w-6xl">
+      <Tabs defaultValue="school" className="w-full max-w-6xl">
         <div className="flex justify-center mb-6">
           <TabsList className="grid grid-cols-2 w-80">
-            <TabsTrigger value="supplement">Supplement View</TabsTrigger>
             <TabsTrigger value="school">School View</TabsTrigger>
+            <TabsTrigger value="supplement">Supplement View</TabsTrigger>
           </TabsList>
         </div>
 
@@ -180,7 +180,7 @@ export default function DashboardClient() {
           <h2 className="text-xl font-semibold text-foreground">
             You are applying to{' '}
             <span className="text-primary font-bold">{totalSchools}</span>{' '}
-            schools! You have completed{' '}
+            school{totalSchools === 1 ? '' : 's'}! You have completed{' '}
             <span className="text-chart-2 font-bold">
               {completedSupplements}
             </span>{' '}
@@ -193,16 +193,6 @@ export default function DashboardClient() {
           {/* <CircularProgress value={percent} className="mt-4" /> */}
         </div>
 
-        <TabsContent value="supplement" className="w-full">
-          <SupplementsDashboardDataTable
-            columns={supplementsColumns}
-            data={supplementsData}
-            listOptions={allListOptions}
-            applicationTypeOptions={allApplicationTypeOptions}
-            statusOptions={allStatusOptions}
-          />
-        </TabsContent>
-
         <TabsContent value="school" className="w-full">
           <SchoolsDashboardDataTable
             columns={schoolsColumns(
@@ -214,6 +204,16 @@ export default function DashboardClient() {
             listOptions={allListOptions}
             applicationTypeOptions={allApplicationTypeOptions}
             handleCreateList={handleCreateList}
+          />
+        </TabsContent>
+
+        <TabsContent value="supplement" className="w-full">
+          <SupplementsDashboardDataTable
+            columns={supplementsColumns}
+            data={supplementsData}
+            listOptions={allListOptions}
+            applicationTypeOptions={allApplicationTypeOptions}
+            statusOptions={allStatusOptions}
           />
         </TabsContent>
       </Tabs>

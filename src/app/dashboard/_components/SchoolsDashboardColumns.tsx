@@ -6,6 +6,16 @@ import { MoreHorizontal, ArrowUpDown } from 'lucide-react';
 import { Button } from '~/components/ui/button';
 import { format } from 'date-fns';
 import { SingleCombobox } from '~/components/ui/combobox';
+import {
+  Select,
+  SelectGroup,
+  SelectContent,
+  SelectTrigger,
+  SelectValue,
+  SelectLabel,
+  SelectItem,
+} from '~/components/ui/select';
+import { sortApplicationTypes } from '~/lib/utils';
 
 // This type is used to define the shape of our data.
 // You can use a Zod schema here if you want.
@@ -16,10 +26,17 @@ export type SchoolsDashboardRow = {
   id: string;
   school_name: string;
   list_name: string;
+  list_id: number;
   application_type: string;
   deadline: Date;
   deadline_id: number;
   num_supplements: number;
+  all_deadlines: {
+    id: number;
+    school_id: number;
+    application_type: 'RD' | 'EA' | 'ED' | 'ED2';
+    date: Date;
+  }[];
 };
 
 export const columns = (
@@ -118,6 +135,52 @@ export const columns = (
           App. Type
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
+      );
+    },
+    cell: ({ row }) => {
+      // Get unique application types for this school
+      const applicationTypes = sortApplicationTypes(
+        row.original.all_deadlines.map((deadline) => ({
+          id: deadline.id.toString(),
+          name: deadline.application_type,
+          date: deadline.date,
+        })),
+      );
+
+      return (
+        <Select
+          onValueChange={(value) => {
+            // Find the selected deadline
+            const selectedDeadline = row.original.all_deadlines.find(
+              (deadline) => deadline.id.toString() === value,
+            );
+            if (selectedDeadline) {
+              // Update the list entry with the new deadline
+              handleUpdateListEntry(
+                Number(row.original.id),
+                Number(row.original.list_id),
+                selectedDeadline.id,
+                row.original.school_name,
+                true,
+              );
+            }
+          }}
+          value={row.original.deadline_id.toString()}
+        >
+          <SelectTrigger className="w-[80px]">
+            <SelectValue placeholder="Select app. type" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              <SelectLabel>Application Types</SelectLabel>
+              {applicationTypes.map((type) => (
+                <SelectItem key={type.id} value={type.id}>
+                  {type.name}
+                </SelectItem>
+              ))}
+            </SelectGroup>
+          </SelectContent>
+        </Select>
       );
     },
   },
