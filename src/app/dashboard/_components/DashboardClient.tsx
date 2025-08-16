@@ -112,6 +112,7 @@ export default function DashboardClient() {
       toast.error(`Failed to create list ${name}`);
       // Revert optimistic update on error
       await utils.schools.get_schools_dashboard_data.invalidate();
+      await utils.supplements.get_supplements_dashboard_data.invalidate();
       return null;
     }
   };
@@ -163,6 +164,7 @@ export default function DashboardClient() {
     } finally {
       // Ensure the UI reflects the changes
       await utils.schools.get_schools_dashboard_data.invalidate();
+      await utils.supplements.get_supplements_dashboard_data.invalidate();
     }
   };
 
