@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { eq, inArray, or, and, isNull } from 'drizzle-orm';
+import { eq, inArray, or, and, isNull, sql } from 'drizzle-orm';
 
 import { createTRPCRouter, publicProcedure } from '~/server/api/trpc';
 import {
@@ -12,43 +12,61 @@ import {
 } from '~/server/db/schema';
 
 export const calendarEventsRouter = createTRPCRouter({
-  create: publicProcedure
+  create_or_update: publicProcedure
     .input(
       z
         .object({
           user_id: z.number().int().positive(),
-          supplement_id: z.number().int().positive().nullable(),
+          supplement_id: z.number().int().positive(),
           deadline_id: z.number().int().positive().nullable(),
           title: z.string().min(1),
           description: z.string().min(1),
           start: z.date(),
           end: z.date(),
         })
-        .refine(
-          (data) =>
-            (data.supplement_id !== null && data.deadline_id === null) ||
-            (data.supplement_id === null && data.deadline_id !== null),
-          {
-            message:
-              'Exactly one of supplement_id or deadline_id must be provided',
-            path: ['supplement_id'], // Could also target both or `["_form"]`
-          },
-        )
         .refine((data) => data.start <= data.end, {
           message: 'Start time must be equal or before end time',
           path: ['start'],
         }),
     )
     .mutation(async ({ ctx, input }) => {
-      await ctx.db.insert(calendar_events).values({
-        user_id: input.user_id,
-        supplement_id: input.supplement_id,
-        deadline_id: input.deadline_id,
-        title: input.title,
-        description: input.description,
-        start: input.start,
-        end: input.end,
-      });
+      const rows = await ctx.db
+        .insert(calendar_events)
+        .values({
+          user_id: input.user_id,
+          supplement_id: input.supplement_id,
+          deadline_id: input.deadline_id,
+          title: input.title,
+          description: input.description,
+          start: input.start,
+          end: input.end,
+        })
+        .onConflictDoUpdate({
+          target: [calendar_events.user_id, calendar_events.supplement_id],
+          set: {
+            title: input.title,
+            description: input.description,
+            start: input.start,
+            end: input.end,
+            updatedAt: new Date(),
+          },
+        })
+        .returning({
+          id: calendar_events.id,
+          wasInserted: sql<boolean>`(xmax = 0)`,
+        });
+
+      const result = rows[0];
+      if (!result) {
+        throw new Error(
+          `Failed to create or update calendar event. user_id: ${input.user_id} supplement_id: ${input.supplement_id} deadline_id: ${input.deadline_id} title: ${input.title} description: ${input.description} start: ${input.start} end: ${input.end}`,
+        );
+      }
+
+      return {
+        event_id: result.id,
+        wasInserted: result.wasInserted,
+      } as const;
     }),
 
   get_by_user: publicProcedure

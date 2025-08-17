@@ -168,11 +168,17 @@ export default function DashboardClient() {
     }
   };
 
-  const createEvent = api.calendar_events.create.useMutation({
-    onSuccess: () => {
+  const createEvent = api.calendar_events.create_or_update.useMutation({
+    onSuccess: (data) => {
       toast.success('Event created successfully');
       // Only invalidate on success to ensure the optimistic update stays
       utils.supplements.get_supplements_dashboard_data.invalidate();
+
+      if (data.wasInserted) {
+        toast.success('Event created successfully');
+      } else {
+        toast.error('Event updated successfully');
+      }
     },
     onError: () => {
       toast.error('Failed to create event');

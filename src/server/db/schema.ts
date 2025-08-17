@@ -196,6 +196,7 @@ export const calendar_events = pgTable(
       .references(() => users.id, { onDelete: 'cascade' }),
     supplement_id: d
       .integer()
+      .notNull()
       .references(() => supplements.id, { onDelete: 'cascade' }),
     deadline_id: d
       .integer()
@@ -220,13 +221,6 @@ export const calendar_events = pgTable(
     // index("calendar_events_deadline_id_idx").on(t.deadline_id),
 
     // Unique per user + supplement
-    uniqueIndex('unique_user_supplement_event')
-      .on(t.user_id, t.supplement_id)
-      .where(sql`${t.supplement_id} IS NOT NULL`),
-
-    // Unique per user + deadline
-    uniqueIndex('unique_user_deadline_event')
-      .on(t.user_id, t.deadline_id)
-      .where(sql`${t.deadline_id} IS NOT NULL`),
+    uniqueIndex('unique_user_supplement_event').on(t.user_id, t.supplement_id),
   ],
 );

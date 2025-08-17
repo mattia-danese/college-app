@@ -42,7 +42,8 @@ export type SupplementsDashboardRow = {
   application_type: 'RD' | 'EA' | 'ED' | 'ED2';
   deadline: Date;
   supplement_prompt: string;
-  complete_by: Date | null;
+  event_start: Date | null;
+  event_end: Date | null;
   status: Status;
 };
 
@@ -134,7 +135,7 @@ export const columns = (
     },
   },
   {
-    accessorKey: 'complete_by',
+    accessorKey: 'event_end',
     header: ({ column }) => {
       return (
         <Button
@@ -147,11 +148,11 @@ export const columns = (
       );
     },
     cell: ({ row }) => {
-      const date = row.getValue('complete_by') as Date | null;
+      const date = row.getValue('event_end') as Date | null;
 
-      if (date) {
-        return <div className="font-medium">{format(date, 'MM-dd-yyyy')}</div>;
-      }
+      //   if (date) {
+      //     return <div className="font-medium">{format(date, 'MM-dd-yyyy')}</div>;
+      //   }
 
       const initialDescription =
         `Prompt: ${row.original.supplement_prompt}\n\n` +
@@ -162,8 +163,12 @@ export const columns = (
 
       const [title, setTitle] = useState(initialTitle);
       const [description, setDescription] = useState(initialDescription);
-      const [start, setStart] = useState<Date>(() => new Date());
-      const [end, setEnd] = useState<Date>(() => new Date());
+      const [start, setStart] = useState<Date>(
+        row.original.event_start ?? new Date(),
+      );
+      const [end, setEnd] = useState<Date>(
+        row.original.event_end ?? new Date(),
+      );
 
       return (
         <div>
@@ -174,15 +179,26 @@ export const columns = (
                 size="sm"
                 className="flex items-center gap-2"
               >
-                Create Event <CalendarPlus className="h-4 w-4" />
+                {date ? (
+                  <div className="flex items-center gap-2">
+                    {format(date, 'MM-dd-yyyy')}
+                  </div>
+                ) : (
+                  <>
+                    Create Event <CalendarPlus className="h-4 w-4" />{' '}
+                  </>
+                )}
               </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Create Calendar Event</DialogTitle>
+                <DialogTitle>
+                  {date ? 'Update Calendar Event' : 'Create Calendar Event'}
+                </DialogTitle>
                 <DialogDescription>
-                  Create a new event for this supplement and add it to your
-                  calendar.
+                  {date
+                    ? 'Update the event for this supplement.'
+                    : 'Create an event for this supplement and add it to your calendar.'}
                 </DialogDescription>
               </DialogHeader>
               {/* <div className="text-xl font-semibold">Create Calendar Event</div> */}
@@ -242,21 +258,8 @@ export const columns = (
                     end,
                   )
                 }
-                // onClick={() =>
-                //   createEvent.mutate({
-                //     user_id: userId,
-                //     supplement_id: supplement.supplement_id,
-                //     deadline_id: null,
-                //     title,
-                //     description,
-                //     start: start!,
-                //     end: end!,
-                //   })
-                // }
-                // disabled={createEvent.isPending}
               >
-                {/* {createEvent.isPending ? 'Creating...' : 'Create Event'} */}
-                Create Event
+                {date ? 'Update Event' : 'Create Event'}
               </Button>
             </DialogContent>
           </Dialog>

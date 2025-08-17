@@ -14,7 +14,7 @@
   - [x] handle supplement title overflow (possibly school too)
   - [ ] ~~add dialog or hover card over supplement title and display all supplement information~~
   - [x] make Complete By field date picker to create new events
-  - [ ] update existing events
+  - [x] update existing events
   - [ ] keep track of user defined status (use bubbles)
 - [x] Create schools dashboard
   - [x] school name, list, app type, deadline, # supplements

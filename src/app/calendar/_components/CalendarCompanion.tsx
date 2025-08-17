@@ -185,7 +185,7 @@ function SupplementEventForm({
   const [start, setStart] = useState<Date>(() => new Date());
   const [end, setEnd] = useState<Date>(() => new Date());
 
-  const createEvent = api.calendar_events.create.useMutation({
+  const createEvent = api.calendar_events.create_or_update.useMutation({
     onSuccess: () => {
       onEventCreated?.();
       setTitle('');
