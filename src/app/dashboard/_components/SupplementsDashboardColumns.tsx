@@ -293,16 +293,10 @@ export const columns = (
       );
     },
     cell: ({ row }) => {
-      const [status, setStatus] = useState<CalendarEventStatus>(
-        row.original.status as CalendarEventStatus,
-      );
-
       return (
         <CalendarEventStatusSelect
-          value={status ?? 'not_planned'}
+          value={row.original.status ?? 'not_planned'}
           onChange={(value) => {
-            setStatus(value);
-
             handleCreateEvent(
               Number(row.original.id),
               row.original.school_name,
@@ -312,7 +306,7 @@ export const columns = (
               value,
             );
           }}
-          disabled={status === null}
+          disabled={row.original.status === null}
         />
       );
     },

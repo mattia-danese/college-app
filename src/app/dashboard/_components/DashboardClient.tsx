@@ -75,7 +75,7 @@ export default function DashboardClient() {
   const totalSupplements = supplementsData.length;
 
   const completedSupplements = supplementsData.filter(
-    (item: any) => item.status === 'Completed',
+    (item: any) => item.status === 'completed',
   ).length;
 
   const percent =
@@ -202,7 +202,13 @@ export default function DashboardClient() {
         if (!oldData) return oldData;
         return oldData.map((supplement) =>
           supplement.id === supplement_id.toString()
-            ? { ...supplement, complete_by: start }
+            ? {
+                ...supplement,
+                complete_by: start,
+                event_start: start,
+                event_end: end,
+                status: status,
+              }
             : supplement,
         );
       },

@@ -6,7 +6,7 @@
 - [x] Display calendar and fetch user events
 - [x] Add calendar events per supplement per school per list
 - [x] Filter calendar events by list
-- [ ] Create supplements dashboard
+- [x] Create supplements dashboard
   - [x] heading (# of schools in each list, x/y supplements completed)
   - [x] school name, app type, deadline, supplement title, scheduled to complete by, status [Completed, In Progress, Planned]
   - [x] add filtering based school name (search box like main page)
@@ -15,7 +15,7 @@
   - [ ] ~~add dialog or hover card over supplement title and display all supplement information~~
   - [x] make Complete By field date picker to create new events
   - [x] update existing events
-  - [ ] keep track of user defined status (use bubbles)
+  - [x] keep track of user defined status (use bubbles)
 - [x] Create schools dashboard
   - [x] school name, list, app type, deadline, # supplements
   - [x] make list and app. type columns with Select components to update list entries
@@ -29,10 +29,9 @@
 - [ ] Schools page
   - [x] Populate select field if school already in a list, update list if on select onchange (like in dashboard)
   - [x] Infinite scroll of schools
+  - [ ] use same combobox for list selection (w/ creation) as in schools dashboard
   - [ ] School image
   - [ ] Schoo link?
-- [ ] Home / Landing Page
-  - [ ] make only public page
 - [ ] Tidying up UI + Extras
   - [x] Dark mode
 - [ ] Improved Calendar functionality
