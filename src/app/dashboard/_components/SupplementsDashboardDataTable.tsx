@@ -27,8 +27,6 @@ import { MultiCombobox } from '~/components/ui/combobox';
 import { useState, useMemo } from 'react';
 import { X } from 'lucide-react';
 
-import type { Status } from './SupplementsDashboardColumns';
-
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];

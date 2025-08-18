@@ -10,6 +10,7 @@ import {
   supplements,
   calendar_events,
 } from '~/server/db/schema';
+import type { CalendarEventStatus } from '~/server/db/types';
 
 export const supplementsRouter = createTRPCRouter({
   create: publicProcedure
@@ -166,6 +167,7 @@ export const supplementsRouter = createTRPCRouter({
           calendar_event_description: calendar_events.description,
           calendar_event_start: calendar_events.start,
           calendar_event_end: calendar_events.end,
+          calendar_event_status: calendar_events.status,
           calendar_event_created_at: calendar_events.createdAt,
           calendar_event_updated_at: calendar_events.updatedAt,
         })
@@ -191,26 +193,7 @@ export const supplementsRouter = createTRPCRouter({
         supplement_word_count: Number(record.word_count),
         event_start: record.calendar_event_start ?? null,
         event_end: record.calendar_event_end ?? null,
-        status: (() => {
-          const now = new Date();
-          if (
-            record.calendar_event_id &&
-            record.calendar_event_start &&
-            record.calendar_event_end
-          ) {
-            if (record.calendar_event_end < now) {
-              return 'Completed';
-            } else if (
-              record.calendar_event_start <= now &&
-              record.calendar_event_end >= now
-            ) {
-              return 'In Progress';
-            } else if (record.calendar_event_start > now) {
-              return 'Planned';
-            }
-          }
-          return 'Not Planned';
-        })() as 'Completed' | 'In Progress' | 'Planned' | 'Not Planned',
+        status: record.calendar_event_status as CalendarEventStatus | null,
       }));
     }),
 });

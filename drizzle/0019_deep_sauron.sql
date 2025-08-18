@@ -1,0 +1,1 @@
+ALTER TYPE "public"."calendar_event_status_enum" ADD VALUE 'Not Planned ⏰' BEFORE 'Planned 📋';

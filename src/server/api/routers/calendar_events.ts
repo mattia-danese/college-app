@@ -23,6 +23,7 @@ export const calendarEventsRouter = createTRPCRouter({
           description: z.string().min(1),
           start: z.date(),
           end: z.date(),
+          status: z.string().min(1),
         })
         .refine((data) => data.start <= data.end, {
           message: 'Start time must be equal or before end time',
@@ -40,6 +41,7 @@ export const calendarEventsRouter = createTRPCRouter({
           description: input.description,
           start: input.start,
           end: input.end,
+          status: input.status,
         })
         .onConflictDoUpdate({
           target: [calendar_events.user_id, calendar_events.supplement_id],
@@ -48,6 +50,7 @@ export const calendarEventsRouter = createTRPCRouter({
             description: input.description,
             start: input.start,
             end: input.end,
+            status: input.status,
             updatedAt: new Date(),
           },
         })

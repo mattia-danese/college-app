@@ -15,6 +15,8 @@ import {
   uniqueIndex,
 } from 'drizzle-orm/pg-core';
 
+import { calendarEventStatusOptions } from '~/server/db/types';
+
 /**
  * This is an example of how to use the multi-project schema feature of Drizzle ORM. Use the same
  * database instance for multiple projects.
@@ -186,6 +188,13 @@ export const supplements = pgTable(
   //   (t) => [index("deadlines_school_id_idx").on(t.school_id)],
 );
 
+export const calendarEventStatusEnum = pgEnum('calendar_event_status_enum', [
+  'not_planned',
+  'planned',
+  'in_progress',
+  'completed',
+]);
+
 export const calendar_events = pgTable(
   'calendar_events',
   (d) => ({
@@ -205,6 +214,7 @@ export const calendar_events = pgTable(
     description: d.text(),
     start: d.timestamp({ withTimezone: true }).notNull(),
     end: d.timestamp({ withTimezone: true }).notNull(),
+    status: calendarEventStatusEnum().notNull(),
     createdAt: d
       .timestamp({ withTimezone: true })
       .default(sql`CURRENT_TIMESTAMP`)

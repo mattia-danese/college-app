@@ -2,7 +2,6 @@
 
 import {
   columns as supplementsColumns,
-  type Status,
   type SupplementsDashboardRow,
 } from './SupplementsDashboardColumns';
 import { SupplementsDashboardDataTable } from './SupplementsDashboardDataTable';
@@ -20,6 +19,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs';
 
 import { CircularProgress } from '~/components/CircularProgress';
 import { toast } from 'sonner';
+import {
+  calendarEventStatusOptions,
+  type CalendarEventStatus,
+} from '~/server/db/types';
 
 export default function DashboardClient() {
   const user = useUserStore((s) => s.user);
@@ -63,9 +66,7 @@ export default function DashboardClient() {
     { id: 'ED2', name: 'ED2' },
   ];
 
-  const allStatusOptions = (
-    ['Completed', 'In Progress', 'Planned', 'Not Planned'] satisfies Status[]
-  ).map((status) => ({
+  const allStatusOptions = calendarEventStatusOptions.map((status) => ({
     id: status,
     name: status,
   }));
@@ -170,7 +171,6 @@ export default function DashboardClient() {
 
   const createEvent = api.calendar_events.create_or_update.useMutation({
     onSuccess: (data) => {
-      toast.success('Event created successfully');
       // Only invalidate on success to ensure the optimistic update stays
       utils.supplements.get_supplements_dashboard_data.invalidate();
 
@@ -193,6 +193,7 @@ export default function DashboardClient() {
     description: string,
     start: Date,
     end: Date,
+    status: CalendarEventStatus,
   ) => {
     // Optimistically update the supplements data to show the new event
     utils.supplements.get_supplements_dashboard_data.setData(
@@ -215,6 +216,7 @@ export default function DashboardClient() {
       description,
       start,
       end,
+      status,
     });
   };
 

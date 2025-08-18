@@ -1,0 +1,2 @@
+-- CREATE TYPE "public"."calendar_event_status_enum" AS ENUM('Not Planned ⏰', 'Planned 📋', 'In Progress 🔄', 'Complete ✅');--> statement-breakpoint
+-- ALTER TABLE "calendar_events" ADD COLUMN "status" "calendar_event_status_enum";

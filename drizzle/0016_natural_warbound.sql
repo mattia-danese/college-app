@@ -1,0 +1,1 @@
+ALTER TABLE "calendar_events" ALTER COLUMN "status" DROP NOT NULL;

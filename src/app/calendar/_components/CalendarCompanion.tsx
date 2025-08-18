@@ -17,6 +17,8 @@ import {
   type CarouselApi,
 } from '~/components/ui/carousel';
 import { DateTimePicker } from '~/components/date-picker';
+import { CalendarEventStatusSelect } from '~/components/CalendarEventStatusSelect';
+import type { CalendarEventStatus } from '~/server/db/types';
 
 type supplement = {
   supplement_id: number;
@@ -184,6 +186,7 @@ function SupplementEventForm({
   const [description, setDescription] = useState(initialDescription);
   const [start, setStart] = useState<Date>(() => new Date());
   const [end, setEnd] = useState<Date>(() => new Date());
+  const [status, setStatus] = useState<CalendarEventStatus>('Planned 📋');
 
   const createEvent = api.calendar_events.create_or_update.useMutation({
     onSuccess: () => {
@@ -192,6 +195,7 @@ function SupplementEventForm({
       setDescription('');
       setStart(new Date());
       setEnd(new Date());
+      setStatus('Planned 📋');
       toast.success('Event created successfully');
     },
   });
@@ -248,6 +252,10 @@ function SupplementEventForm({
             onChange={(e) => setDescription(e.target.value)}
           />
         </div>
+        <div className="space-y-2 w-fit mb-4">
+          <Label>Event Status</Label>
+          <CalendarEventStatusSelect value={status} onChange={setStatus} />
+        </div>
         <Button
           onClick={() =>
             createEvent.mutate({
@@ -258,6 +266,7 @@ function SupplementEventForm({
               description,
               start: start!,
               end: end!,
+              status,
             })
           }
           disabled={createEvent.isPending}

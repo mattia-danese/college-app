@@ -29,11 +29,11 @@ import {
   DialogTrigger,
 } from '~/components/ui/dialog';
 import { useState } from 'react';
+import { CalendarEventStatusSelect } from '~/components/CalendarEventStatusSelect';
+import type { CalendarEventStatus } from '~/server/db/types';
 
 // This type is used to define the shape of our data.
 // You can use a Zod schema here if you want.
-
-export type Status = 'Completed' | 'In Progress' | 'Planned' | 'Not Planned';
 
 export type SupplementsDashboardRow = {
   id: string;
@@ -44,7 +44,7 @@ export type SupplementsDashboardRow = {
   supplement_prompt: string;
   event_start: Date | null;
   event_end: Date | null;
-  status: Status;
+  status: CalendarEventStatus | null;
 };
 
 export const columns = (
@@ -54,6 +54,7 @@ export const columns = (
     description: string,
     start: Date,
     end: Date,
+    status: CalendarEventStatus,
   ) => void,
 ): ColumnDef<SupplementsDashboardRow>[] => [
   {
@@ -169,6 +170,9 @@ export const columns = (
       const [end, setEnd] = useState<Date>(
         row.original.event_end ?? new Date(),
       );
+      const [status, setStatus] = useState<CalendarEventStatus>(
+        row.original.status ?? 'planned',
+      );
 
       return (
         <div>
@@ -248,6 +252,13 @@ export const columns = (
                   onChange={(e) => setDescription(e.target.value)}
                 />
               </div>
+              <div className="space-y-2 w-fit mb-4">
+                <Label>Event Status</Label>
+                <CalendarEventStatusSelect
+                  value={status}
+                  onChange={setStatus}
+                />
+              </div>
               <Button
                 onClick={() =>
                   handleCreateEvent(
@@ -256,6 +267,7 @@ export const columns = (
                     description,
                     start,
                     end,
+                    status,
                   )
                 }
               >
@@ -278,6 +290,30 @@ export const columns = (
           Status
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
+      );
+    },
+    cell: ({ row }) => {
+      const [status, setStatus] = useState<CalendarEventStatus>(
+        row.original.status as CalendarEventStatus,
+      );
+
+      return (
+        <CalendarEventStatusSelect
+          value={status ?? 'not_planned'}
+          onChange={(value) => {
+            setStatus(value);
+
+            handleCreateEvent(
+              Number(row.original.id),
+              row.original.school_name,
+              row.original.supplement_prompt,
+              row.original.event_start!,
+              row.original.event_end!,
+              value,
+            );
+          }}
+          disabled={status === null}
+        />
       );
     },
   },
