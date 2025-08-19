@@ -4,18 +4,13 @@
 import { sql } from 'drizzle-orm';
 import {
   index,
-  pgTableCreator,
   decimal,
   pgEnum,
   pgTable,
-  serial,
   timestamp,
-  text,
   unique,
   uniqueIndex,
 } from 'drizzle-orm/pg-core';
-
-import { calendarEventStatusOptions } from '~/server/db/types';
 
 /**
  * This is an example of how to use the multi-project schema feature of Drizzle ORM. Use the same
@@ -23,22 +18,6 @@ import { calendarEventStatusOptions } from '~/server/db/types';
  *
  * @see https://orm.drizzle.team/docs/goodies#multi-project-schema
  */
-// export const createTable = pgTableCreator((name) => `college-app_${name}`);
-export const createTable = pgTableCreator((name) => name);
-
-export const posts = createTable(
-  'post',
-  (d) => ({
-    id: d.integer().primaryKey().generatedByDefaultAsIdentity(),
-    name: d.varchar({ length: 256 }),
-    createdAt: d
-      .timestamp({ withTimezone: true })
-      .default(sql`CURRENT_TIMESTAMP`)
-      .notNull(),
-    updatedAt: d.timestamp({ withTimezone: true }).$onUpdate(() => new Date()),
-  }),
-  (t) => [index('name_idx').on(t.name)],
-);
 
 export const users = pgTable('users', (d) => ({
   id: d.integer().primaryKey().generatedByDefaultAsIdentity(),

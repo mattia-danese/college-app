@@ -1,6 +1,5 @@
 import { createCallerFactory, createTRPCRouter } from '~/server/api/trpc';
 
-import { postRouter } from '~/server/api/routers/post';
 import { schoolsRouter } from './routers/schools';
 import { deadlinesRouter } from './routers/deadlines';
 import { supplementsRouter } from './routers/supplements';
@@ -15,7 +14,6 @@ import { calendarEventsRouter } from './routers/calendar_events';
  * All routers added in /api/routers should be manually added here.
  */
 export const appRouter = createTRPCRouter({
-  post: postRouter,
   schools: schoolsRouter,
   deadlines: deadlinesRouter,
   supplements: supplementsRouter,
