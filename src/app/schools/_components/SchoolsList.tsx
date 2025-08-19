@@ -2,6 +2,7 @@
 import { Input } from '~/components/ui/input';
 import { Button } from '~/components/ui/button';
 import SchoolsListItem from './SchoolsListItem';
+import { sortApplicationTypes } from '~/lib/utils';
 
 interface SchoolsListProps {
   schools: {
@@ -38,6 +39,11 @@ interface SchoolsListProps {
     school_name: string,
     list_id: number,
   ) => void;
+  onCreateList: (
+    name: string,
+    updatingListEntry: boolean,
+    school_id: number,
+  ) => Promise<any>;
   updatingSchoolId: number | null;
   query: string;
   onQueryChange: (value: string) => void;
@@ -51,6 +57,7 @@ export default function SchoolsList({
   lists,
   onListEntryChange,
   onRemoveSchoolFromList,
+  onCreateList,
   updatingSchoolId,
   query,
   onQueryChange,
@@ -97,27 +104,38 @@ export default function SchoolsList({
         </div>
       ) : (
         <>
-          {schools.map((school) => (
-            <SchoolsListItem
-              key={school.id}
-              id={school.id}
-              name={school.name}
-              city={school.city}
-              state={school.state}
-              size={school.size}
-              tuition={school.tuition}
-              acceptance_rate={school.acceptance_rate}
-              deadlines={school.deadlines}
-              supplementsCount={school.supplementsCount}
-              lists={lists}
-              selectedListId={school.list_id}
-              selectedDeadlineId={school.deadline_id}
-              listEntryId={school.list_entry_id}
-              onListEntryChange={onListEntryChange}
-              onRemoveSchoolFromList={onRemoveSchoolFromList}
-              disabled={updatingSchoolId === school.id}
-            />
-          ))}
+          {schools.map((school) => {
+            const applicationTypes = sortApplicationTypes(
+              school.deadlines.map((deadline) => ({
+                id: deadline.id,
+                application_type: deadline.application_type,
+                date: deadline.date,
+              })),
+            );
+
+            return (
+              <SchoolsListItem
+                key={school.id}
+                id={school.id}
+                name={school.name}
+                city={school.city}
+                state={school.state}
+                size={school.size}
+                tuition={school.tuition}
+                acceptance_rate={school.acceptance_rate}
+                deadlines={applicationTypes}
+                supplementsCount={school.supplementsCount}
+                lists={lists}
+                selectedListId={school.list_id}
+                selectedDeadlineId={school.deadline_id}
+                listEntryId={school.list_entry_id}
+                onListEntryChange={onListEntryChange}
+                onRemoveSchoolFromList={onRemoveSchoolFromList}
+                onCreateList={onCreateList}
+                disabled={updatingSchoolId === school.id}
+              />
+            );
+          })}
           <div className="flex justify-center mt-4">
             {hasNextPage ? (
               <Button onClick={onLoadMore} disabled={isFetchingNextPage}>

@@ -142,7 +142,7 @@ export const columns = (
       const applicationTypes = sortApplicationTypes(
         row.original.all_deadlines.map((deadline) => ({
           id: deadline.id.toString(),
-          name: deadline.application_type,
+          application_type: deadline.application_type,
           date: deadline.date,
         })),
       );
@@ -175,7 +175,7 @@ export const columns = (
               <SelectLabel>Application Types</SelectLabel>
               {applicationTypes.map((type) => (
                 <SelectItem key={type.id} value={type.id}>
-                  {type.name}
+                  {type.application_type}
                 </SelectItem>
               ))}
             </SelectGroup>

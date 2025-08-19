@@ -124,6 +124,52 @@ export default function SchoolsClient() {
     }
   };
 
+  const createList = api.lists.create.useMutation();
+  const handleCreateList = async (
+    name: string,
+    updatingListEntry: boolean = true,
+    school_id: number,
+  ) => {
+    if (updatingListEntry) {
+      setUpdatingSchoolId(school_id);
+    }
+
+    // Create optimistic list object with negative ID to avoid conflicts
+    const optimisticList = {
+      id: -Math.floor(Math.random() * 1000000), // Negative temporary ID
+      name: name,
+      user_id: user!.id,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    try {
+      // Optimistically update the lists data
+      utils.lists.get_by_user.setData({ user_id: user!.id }, (oldData) => {
+        if (!oldData) return [optimisticList];
+        return [...oldData, optimisticList];
+      });
+
+      const result = await createList.mutateAsync({
+        name: name,
+        user_id: user!.id,
+      });
+
+      if (!updatingListEntry) {
+        toast.success(`List ${name} created successfully`);
+      }
+
+      return result;
+    } catch (error) {
+      toast.error(`Failed to create list ${name}`);
+      return null;
+    } finally {
+      // Always invalidate to get the real data from server
+      await utils.lists.get_by_user.invalidate({ user_id: user!.id });
+      setUpdatingSchoolId(null);
+    }
+  };
+
   return (
     <div>
       {isListsLoading && isSchoolsLoading ? (
@@ -134,6 +180,7 @@ export default function SchoolsClient() {
           lists={lists}
           onListEntryChange={handleCreateOrUpdateListEntry}
           onRemoveSchoolFromList={handleRemoveSchoolFromList}
+          onCreateList={handleCreateList}
           updatingSchoolId={updatingSchoolId}
           query={query}
           onQueryChange={setQuery}

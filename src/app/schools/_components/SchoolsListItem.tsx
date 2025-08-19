@@ -13,8 +13,9 @@ import {
 } from '~/components/ui/select';
 
 import { Button } from '~/components/ui/button';
-import { X } from 'lucide-react';
+import { Plus, X } from 'lucide-react';
 import { useState } from 'react';
+import { SingleCombobox } from '~/components/ui/combobox';
 
 interface SchoolsListItemProps {
   id: number;
@@ -50,6 +51,11 @@ interface SchoolsListItemProps {
     school_name: string,
     list_id: number,
   ) => void;
+  onCreateList: (
+    name: string,
+    updatingListEntry: boolean,
+    school_id: number,
+  ) => Promise<any>;
   disabled: boolean;
 }
 
@@ -70,10 +76,16 @@ export default function SchoolsListItem({
   listEntryId,
   onListEntryChange,
   onRemoveSchoolFromList,
+  onCreateList,
   disabled,
 }: SchoolsListItemProps) {
   const [selectList, setSelectList] = useState(selectedListId);
   const [selectDeadline, setSelectDeadline] = useState(selectedDeadlineId);
+
+  const listOptions = lists.map((list) => ({
+    id: list.id.toString(),
+    name: list.name,
+  }));
 
   return (
     <Card key={id} className="mb-4">
@@ -103,32 +115,38 @@ export default function SchoolsListItem({
         </div>
 
         <div className="flex items-center gap-2">
-          <Select
-            onValueChange={(item) => {
-              setSelectList(parseInt(item));
+          <SingleCombobox
+            placeholder="Your Lists"
+            buttonText="Pick a List"
+            dimUnselected={true}
+            options={listOptions}
+            disabled={disabled}
+            selectedValue={lists.find((l) => l.id === selectList)?.name ?? ''}
+            onSelectionChange={(value) => {
+              const list = listOptions.find((l) => l.name === value);
+
+              if (!list) return;
+
+              setSelectList(parseInt(list.id));
               if (selectDeadline === null) return;
-              onListEntryChange(id, parseInt(item), selectDeadline, name);
+
+              onListEntryChange(id, parseInt(list.id), selectDeadline, name);
             }}
-            value={selectList?.toString() ?? ''}
-          >
-            <SelectTrigger className="w-[180px]" disabled={disabled}>
-              {disabled ? (
-                <Spinner />
-              ) : (
-                <SelectValue placeholder="Add to a List" />
-              )}
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                <SelectLabel>Your Lists</SelectLabel>
-                {lists.map((list) => (
-                  <SelectItem key={list.id} value={list.id.toString()}>
-                    {list.name}
-                  </SelectItem>
-                ))}
-              </SelectGroup>
-            </SelectContent>
-          </Select>
+            doesCreate={true}
+            handleCreate={async (name) => {
+              const list = await onCreateList(
+                name,
+                selectDeadline !== null,
+                id,
+              );
+              setSelectList(list.id);
+
+              if (selectDeadline === null) return;
+
+              onListEntryChange(id, list.id, selectDeadline, name);
+            }}
+          />
+
           <Select
             onValueChange={(item) => {
               setSelectDeadline(parseInt(item));
@@ -141,7 +159,14 @@ export default function SchoolsListItem({
               {disabled ? (
                 <Spinner />
               ) : (
-                <SelectValue placeholder="Pick a app. type" />
+                <SelectValue
+                  placeholder={
+                    <div className="flex items-center gap-2">
+                      <Plus className="h-4 w-4" />
+                      Pick a Deadline
+                    </div>
+                  }
+                />
               )}
             </SelectTrigger>
             <SelectContent>

@@ -29,7 +29,7 @@
 - [ ] Schools page
   - [x] Populate select field if school already in a list, update list if on select onchange (like in dashboard)
   - [x] Infinite scroll of schools
-  - [ ] use same combobox for list selection (w/ creation) as in schools dashboard
+  - [x] use same combobox for list selection (w/ creation) as in schools dashboard
   - [ ] School image
   - [ ] Schoo link?
 - [ ] Tidying up UI + Extras

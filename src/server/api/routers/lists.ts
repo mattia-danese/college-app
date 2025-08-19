@@ -19,7 +19,16 @@ export const listsRouter = createTRPCRouter({
           name: input.name,
           user_id: input.user_id,
         })
-        .returning();
+        .returning({
+          id: lists.id,
+          name: lists.name,
+        });
+
+      if (!result) {
+        throw new Error(
+          `Failed to create list. user_id: ${input.user_id} name: ${input.name}`,
+        );
+      }
 
       return result;
     }),

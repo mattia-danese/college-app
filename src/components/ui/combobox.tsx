@@ -159,6 +159,8 @@ interface SingleComboboxProps {
   buttonText?: string;
   doesCreate?: boolean;
   handleCreate?: (value: string) => void;
+  disabled?: boolean;
+  dimUnselected?: boolean;
 }
 
 export function SingleCombobox({
@@ -170,6 +172,8 @@ export function SingleCombobox({
   buttonText = 'Select option...',
   doesCreate = false,
   handleCreate,
+  disabled = false,
+  dimUnselected = false,
 }: SingleComboboxProps) {
   const [open, setOpen] = React.useState(false);
   const [inputValue, setInputValue] = React.useState('');
@@ -204,6 +208,13 @@ export function SingleCombobox({
     return selectedValue;
   };
 
+  const getButtonTextColor = () => {
+    if (dimUnselected && !selectedValue) {
+      return 'text-muted-foreground';
+    }
+    return '';
+  };
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -212,11 +223,16 @@ export function SingleCombobox({
           role="combobox"
           aria-expanded={open}
           className="justify-between"
+          disabled={disabled}
         >
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1">
-              {selectedValue ? <></> : <Plus className="h-4 w-4" />}
-              <span>{getDisplayText()}</span>
+              {selectedValue ? (
+                <></>
+              ) : (
+                <Plus className="h-4 w-4 text-muted-foreground" />
+              )}
+              <span className={getButtonTextColor()}>{getDisplayText()}</span>
             </div>
           </div>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
