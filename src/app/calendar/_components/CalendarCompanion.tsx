@@ -186,7 +186,7 @@ function SupplementEventForm({
   const [description, setDescription] = useState(initialDescription);
   const [start, setStart] = useState<Date>(() => new Date());
   const [end, setEnd] = useState<Date>(() => new Date());
-  const [status, setStatus] = useState<CalendarEventStatus>('Planned 📋');
+  const [status, setStatus] = useState<CalendarEventStatus>('planned');
 
   const createEvent = api.calendar_events.create_or_update.useMutation({
     onSuccess: () => {
@@ -195,7 +195,7 @@ function SupplementEventForm({
       setDescription('');
       setStart(new Date());
       setEnd(new Date());
-      setStatus('Planned 📋');
+      setStatus('planned');
       toast.success('Event created successfully');
     },
   });
