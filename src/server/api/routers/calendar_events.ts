@@ -100,7 +100,7 @@ export const calendarEventsRouter = createTRPCRouter({
 
       if (input.event_google_id) {
         new_values = {
-          event_google_id: input.event_google_id,
+          google_event_id: input.event_google_id,
         };
       }
 
