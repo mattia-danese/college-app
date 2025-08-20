@@ -155,6 +155,13 @@
       "when": 1755644034728,
       "tag": "0021_strange_epoch",
       "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1755717981142,
+      "tag": "0022_spicy_daimon_hellstrom",
+      "breakpoints": true
     }
   ]
 }

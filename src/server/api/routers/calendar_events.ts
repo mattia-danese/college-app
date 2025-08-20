@@ -29,6 +29,7 @@ export const calendarEventsRouter = createTRPCRouter({
             'in_progress',
             'completed',
           ]),
+          google_event_id: z.string().optional(),
         })
         .refine((data) => data.start <= data.end, {
           message: 'Start time must be equal or before end time',
@@ -47,6 +48,7 @@ export const calendarEventsRouter = createTRPCRouter({
           start: input.start,
           end: input.end,
           status: input.status,
+          google_event_id: input.google_event_id || null,
         })
         .onConflictDoUpdate({
           target: [calendar_events.user_id, calendar_events.supplement_id],
@@ -81,17 +83,34 @@ export const calendarEventsRouter = createTRPCRouter({
     .input(
       z.object({
         event_id: z.number().int().positive(),
-        event_start: z.date(),
-        event_end: z.date(),
+        event_start: z.date().optional(),
+        event_end: z.date().optional(),
+        event_google_id: z.string().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      await ctx.db
-        .update(calendar_events)
-        .set({
+      let new_values = {};
+
+      if (input.event_start && input.event_end) {
+        new_values = {
           start: input.event_start,
           end: input.event_end,
-        })
+        };
+      }
+
+      if (input.event_google_id) {
+        new_values = {
+          event_google_id: input.event_google_id,
+        };
+      }
+
+      if (Object.keys(new_values).length === 0) {
+        throw new Error('No valid values to update');
+      }
+
+      await ctx.db
+        .update(calendar_events)
+        .set(new_values)
         .where(eq(calendar_events.id, input.event_id));
     }),
 

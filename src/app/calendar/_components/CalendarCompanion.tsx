@@ -188,56 +188,63 @@ function SupplementEventForm({
   const [end, setEnd] = useState<Date>(() => new Date());
   const [status, setStatus] = useState<CalendarEventStatus>('planned');
 
-  const createEvent = api.calendar_events.create_or_update.useMutation({
-    onSuccess: async () => {
-      // Try to create Google Calendar event
-      try {
-        const response = await fetch('/api/calendar/google/create', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            title,
-            description,
-            start: start!.toISOString(),
-            end: end!.toISOString(),
-          }),
-        });
+  const createEvent = api.calendar_events.create_or_update.useMutation();
+  const updateEvent = api.calendar_events.update.useMutation();
 
-        if (response.ok) {
-          const result = await response.json();
+  const handleCreateEvent = async () => {
+    const { event_id } = await createEvent.mutateAsync({
+      user_id: userId,
+      supplement_id: supplement.supplement_id,
+      deadline_id: null,
+      title,
+      description,
+      start: start!,
+      end: end!,
+      status,
+    });
 
-          // Log Google Calendar status for debugging but don't show to user
-          if (result.googleCalendarConnected) {
-            console.log('Event also added to Google Calendar');
-          } else {
-            console.log(
-              'Google Calendar not connected or sync failed:',
-              result.message,
-            );
-          }
-        } else {
-          console.error('Google Calendar API error:', await response.text());
+    onEventCreated?.();
+    setTitle('');
+    setDescription('');
+    setStart(new Date());
+    setEnd(new Date());
+    setStatus('planned');
+
+    toast.success('Event successfully created');
+
+    // Try to create Google Calendar event
+    try {
+      const response = await fetch('/api/calendar/google/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title,
+          description,
+          start: start!.toISOString(),
+          end: end!.toISOString(),
+        }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+
+        const googleEventId = result.googleEventId;
+
+        if (googleEventId) {
+          await updateEvent.mutateAsync({
+            event_id: event_id,
+            event_google_id: googleEventId,
+          });
         }
-      } catch (error) {
-        console.error('Google Calendar sync error:', error);
+      } else {
+        console.error('Google Calendar API error:', await response.text());
       }
-
-      // Always show the same success message
-      toast.success('Event successfully created');
-
-      onEventCreated?.();
-      setTitle('');
-      setDescription('');
-      setStart(new Date());
-      setEnd(new Date());
-      setStatus('planned');
-    },
-    onError: (error) => {
-      toast.error(`Failed to create event: ${error.message}`);
-    },
-  });
+    } catch (error) {
+      console.error('Google Calendar sync error:', error);
+    }
+  };
 
   return (
     <Card className="w-full max-w-xl mx-auto">
@@ -295,21 +302,7 @@ function SupplementEventForm({
           <Label>Event Status</Label>
           <CalendarEventStatusSelect value={status} onChange={setStatus} />
         </div>
-        <Button
-          onClick={() =>
-            createEvent.mutate({
-              user_id: userId,
-              supplement_id: supplement.supplement_id,
-              deadline_id: null,
-              title,
-              description,
-              start: start!,
-              end: end!,
-              status,
-            })
-          }
-          disabled={createEvent.isPending}
-        >
+        <Button onClick={handleCreateEvent} disabled={createEvent.isPending}>
           {createEvent.isPending ? 'Creating...' : 'Create Event'}
         </Button>
       </CardContent>

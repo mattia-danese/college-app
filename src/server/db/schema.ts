@@ -194,6 +194,7 @@ export const calendar_events = pgTable(
     start: d.timestamp({ withTimezone: true }).notNull(),
     end: d.timestamp({ withTimezone: true }).notNull(),
     status: calendarEventStatusEnum().notNull(),
+    google_event_id: d.text(),
     createdAt: d
       .timestamp({ withTimezone: true })
       .default(sql`CURRENT_TIMESTAMP`)
