@@ -11,11 +11,13 @@ import type { CalendarEventExternal } from '@schedule-x/calendar';
 import { format, isEqual } from 'date-fns';
 
 import { useUserStore } from '~/stores/useUserStore';
+import type { CalendarEventStatus } from '~/server/db/types';
 
 export default function CalendarClient() {
   const [selectedListIds, setSelectedListIds] = useState<number[]>([]);
 
   const user = useUserStore((s) => s.user);
+  const utils = api.useUtils();
 
   const { data: userLists = [], isLoading: isListsLoading } =
     api.lists.get_by_user.useQuery(
@@ -105,6 +107,73 @@ export default function CalendarClient() {
     setSelectedListIds(selectedIds);
   };
 
+  const updateEvent = api.calendar_events.update.useMutation();
+  const handleEventUpdateOnDrag = async (
+    event_id: number,
+    event_start: string,
+    event_end: string,
+  ) => {
+    const newStartDate = new Date(event_start.replace(' ', 'T'));
+    const newEndDate = new Date(event_end.replace(' ', 'T'));
+
+    // Optimistically update the cache
+    utils.calendar_events.get_by_user.setData(
+      { user_id: user!.id },
+      (oldData) => {
+        if (!oldData) return oldData;
+
+        const newData = { ...oldData };
+
+        // Find the list containing the event and update it
+        for (const listId of Object.keys(newData)) {
+          const listEvents = newData[Number(listId)];
+          if (listEvents?.events) {
+            const eventIndex = listEvents.events.findIndex(
+              (event) => event.event_id === event_id,
+            );
+
+            if (eventIndex === -1) continue;
+
+            // Create a new array with the updated event
+            const updatedEvents = [...listEvents.events];
+            const originalEvent = updatedEvents[eventIndex];
+            if (originalEvent) {
+              updatedEvents[eventIndex] = {
+                event_id: originalEvent.event_id,
+                event_title: originalEvent.event_title,
+                event_description: originalEvent.event_description,
+                event_start: newStartDate,
+                event_end: newEndDate,
+                supplement_id: originalEvent.supplement_id,
+                deadline_id: originalEvent.deadline_id,
+              };
+              newData[Number(listId)] = {
+                ...listEvents,
+                events: updatedEvents,
+              };
+
+              break;
+            }
+          }
+        }
+
+        return newData;
+      },
+    );
+
+    try {
+      await updateEvent.mutateAsync({
+        event_id: event_id,
+        event_start: newStartDate,
+        event_end: newEndDate,
+      });
+    } catch (error) {
+      // If the API call fails, invalidate the query to revert the optimistic update
+      utils.calendar_events.get_by_user.invalidate({ user_id: user!.id });
+      console.error('Failed to update event:', error);
+    }
+  };
+
   // potentially show spinner or skeleton
   if (!user) return null;
 
@@ -132,7 +201,11 @@ export default function CalendarClient() {
               concise={false}
             />
           </div>
-          <Calendar userId={user.id} events={calendarEventsToDisplay} />
+          <Calendar
+            userId={user.id}
+            events={calendarEventsToDisplay}
+            onEventUpdateOnDrag={handleEventUpdateOnDrag}
+          />
         </TabsContent>
 
         <TabsContent value="schedule" className="w-full">

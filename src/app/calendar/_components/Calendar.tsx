@@ -19,9 +19,14 @@ import { useTheme } from 'next-themes';
 type CalendarProps = {
   userId: number;
   events: CalendarEventExternal[];
+  onEventUpdateOnDrag: (
+    event_id: number,
+    event_start: string,
+    event_end: string,
+  ) => void;
 };
 
-function Calendar({ userId, events }: CalendarProps) {
+function Calendar({ userId, events, onEventUpdateOnDrag }: CalendarProps) {
   const { theme, resolvedTheme } = useTheme();
   const eventsServiceRef = useRef<ReturnType<
     typeof createEventsServicePlugin
@@ -39,6 +44,17 @@ function Calendar({ userId, events }: CalendarProps) {
       createDragAndDropPlugin(),
       eventsServiceRef.current,
     ],
+    callbacks: {
+      onEventUpdate(updatedEvent) {
+        console.log('updatedEvent', updatedEvent);
+
+        onEventUpdateOnDrag(
+          Number(updatedEvent.id),
+          updatedEvent.start,
+          updatedEvent.end,
+        );
+      },
+    },
   });
 
   // Update calendar theme when app theme changes

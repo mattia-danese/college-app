@@ -23,7 +23,12 @@ export const calendarEventsRouter = createTRPCRouter({
           description: z.string().min(1),
           start: z.date(),
           end: z.date(),
-          status: z.string().min(1),
+          status: z.enum([
+            'not_planned',
+            'planned',
+            'in_progress',
+            'completed',
+          ]),
         })
         .refine((data) => data.start <= data.end, {
           message: 'Start time must be equal or before end time',
@@ -70,6 +75,24 @@ export const calendarEventsRouter = createTRPCRouter({
         event_id: result.id,
         wasInserted: result.wasInserted,
       } as const;
+    }),
+
+  update: publicProcedure
+    .input(
+      z.object({
+        event_id: z.number().int().positive(),
+        event_start: z.date(),
+        event_end: z.date(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      await ctx.db
+        .update(calendar_events)
+        .set({
+          start: input.event_start,
+          end: input.event_end,
+        })
+        .where(eq(calendar_events.id, input.event_id));
     }),
 
   get_by_user: publicProcedure

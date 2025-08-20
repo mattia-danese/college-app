@@ -35,7 +35,7 @@
 - [ ] Tidying up UI + Extras
   - [x] Dark mode
 - [ ] Improved Calendar functionality
-  - [ ] drag & drop in calendar updates calendar event
+  - [x] drag & drop in calendar updates calendar event
   - [ ] edit calendar event directly in calendar
   - [ ] Google Calendar & Apple Calendar integration
 - [ ] Deploy
