@@ -189,14 +189,53 @@ function SupplementEventForm({
   const [status, setStatus] = useState<CalendarEventStatus>('planned');
 
   const createEvent = api.calendar_events.create_or_update.useMutation({
-    onSuccess: () => {
+    onSuccess: async () => {
+      // Try to create Google Calendar event
+      try {
+        const response = await fetch('/api/calendar/google/create', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            title,
+            description,
+            start: start!.toISOString(),
+            end: end!.toISOString(),
+          }),
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+
+          // Log Google Calendar status for debugging but don't show to user
+          if (result.googleCalendarConnected) {
+            console.log('Event also added to Google Calendar');
+          } else {
+            console.log(
+              'Google Calendar not connected or sync failed:',
+              result.message,
+            );
+          }
+        } else {
+          console.error('Google Calendar API error:', await response.text());
+        }
+      } catch (error) {
+        console.error('Google Calendar sync error:', error);
+      }
+
+      // Always show the same success message
+      toast.success('Event successfully created');
+
       onEventCreated?.();
       setTitle('');
       setDescription('');
       setStart(new Date());
       setEnd(new Date());
       setStatus('planned');
-      toast.success('Event created successfully');
+    },
+    onError: (error) => {
+      toast.error(`Failed to create event: ${error.message}`);
     },
   });
 

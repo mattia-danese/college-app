@@ -36,8 +36,16 @@
   - [x] Dark mode
 - [ ] Improved Calendar functionality
   - [x] drag & drop in calendar updates calendar event
-  - [ ] edit calendar event directly in calendar
-  - [ ] Google Calendar & Apple Calendar integration
+  - [ ] ~~edit calendar event directly in calendar~~
+  - [ ] Google Calendar integration
+    - [x] created events show up in google calendar
+    - [ ] drag & drop in calendar updates google calendar
+    - [ ] webhook so changes in google calendar show up in app
+  - [ ] Apple Calendar integration
+- [ ] Profile page
+  - [ ] toggles for calendar integrations
+  - [ ] other settings
+- [ ] Refactor CalendarClient and CalendarCompanion components (pass api calls in children props)
 - [ ] Deploy
 - [ ] Create scraper
 
