@@ -39,7 +39,7 @@
   - [ ] ~~edit calendar event directly in calendar~~
   - [ ] Google Calendar integration
     - [x] created events show up in google calendar
-    - [ ] drag & drop in calendar updates google calendar
+    - [x] drag & drop in calendar updates google calendar
     - [ ] webhook so changes in google calendar show up in app
   - [ ] Apple Calendar integration
 - [ ] Profile page

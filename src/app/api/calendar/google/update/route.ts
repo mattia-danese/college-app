@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
+import { env } from '~/env';
 import { createCaller } from '~/server/api/root';
 import { createTRPCContext } from '~/server/api/trpc';
-import { env } from '~/env';
 import { decrypt, encrypt } from '~/lib/encryption';
 
 export async function POST(request: NextRequest) {
@@ -14,11 +14,11 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { title, description, start, end } = body;
+    const { event_id, event_start, event_end } = body;
 
-    if (!title || !start || !end) {
+    if (!event_id || !event_start || !event_end) {
       return NextResponse.json(
-        { error: 'Missing required fields: title, start, end' },
+        { error: 'Missing required fields: event_id, event_start, event_end' },
         { status: 400 },
       );
     }
@@ -97,41 +97,51 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Create event in Google Calendar
-    const startDate = new Date(start);
-    const endDate = new Date(end);
+    const calendarEvent = await caller.calendar_events.get_by_id({
+      event_id: event_id,
+    });
+
+    if (!calendarEvent) {
+      return NextResponse.json({
+        success: true,
+        googleCalendarConnected: false,
+        message: 'Event not found',
+      });
+    }
+
+    const { title, description, start, end, google_event_id } = calendarEvent;
 
     // Check if this is an all-day event (same date)
-    const isAllDay = startDate.toDateString() === endDate.toDateString();
+    const isAllDay = start.toDateString() === end.toDateString();
 
     const googleEvent = {
       summary: title,
-      description: description || '',
+      description: description,
       ...(isAllDay
         ? {
             start: {
-              date: startDate.toISOString().split('T')[0], // YYYY-MM-DD format
+              date: start.toISOString().split('T')[0], // YYYY-MM-DD format
             },
             end: {
-              date: endDate.toISOString().split('T')[0], // YYYY-MM-DD format
+              date: end.toISOString().split('T')[0], // YYYY-MM-DD format
             },
           }
         : {
             start: {
-              dateTime: startDate.toISOString(),
+              dateTime: start.toISOString(),
               timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
             },
             end: {
-              dateTime: endDate.toISOString(),
+              dateTime: end.toISOString(),
               timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
             },
           }),
     };
 
     const calendarResponse = await fetch(
-      'https://www.googleapis.com/calendar/v3/calendars/primary/events',
+      `https://www.googleapis.com/calendar/v3/calendars/primary/events/${google_event_id}`,
       {
-        method: 'POST',
+        method: 'PUT',
         headers: {
           Authorization: `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
@@ -159,11 +169,6 @@ export async function POST(request: NextRequest) {
       event: createdEvent,
     });
   } catch (error) {
-    console.error('Error creating Google Calendar event:', error);
-    return NextResponse.json({
-      success: true,
-      googleCalendarConnected: false,
-      message: 'Internal server error',
-    });
+    console.error('Failed to update event:', error);
   }
 }

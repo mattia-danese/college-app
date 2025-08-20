@@ -114,6 +114,17 @@ export const calendarEventsRouter = createTRPCRouter({
         .where(eq(calendar_events.id, input.event_id));
     }),
 
+  get_by_id: publicProcedure
+    .input(z.object({ event_id: z.number().int().positive() }))
+    .query(async ({ ctx, input }) => {
+      const [calendar_event] = await ctx.db
+        .select()
+        .from(calendar_events)
+        .where(eq(calendar_events.id, input.event_id));
+
+      return calendar_event ?? null;
+    }),
+
   get_by_user: publicProcedure
     .input(
       z.object({

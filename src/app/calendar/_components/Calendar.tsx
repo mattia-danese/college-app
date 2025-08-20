@@ -46,8 +46,6 @@ function Calendar({ userId, events, onEventUpdateOnDrag }: CalendarProps) {
     ],
     callbacks: {
       onEventUpdate(updatedEvent) {
-        console.log('updatedEvent', updatedEvent);
-
         onEventUpdateOnDrag(
           Number(updatedEvent.id),
           updatedEvent.start,

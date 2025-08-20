@@ -172,6 +172,23 @@ export default function CalendarClient() {
       utils.calendar_events.get_by_user.invalidate({ user_id: user!.id });
       console.error('Failed to update event:', error);
     }
+
+    try {
+      const response = await fetch('/api/calendar/google/update', {
+        method: 'POST',
+        body: JSON.stringify({
+          event_id: event_id,
+          event_start: newStartDate,
+          event_end: newEndDate,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
+    } catch (error) {
+      console.error('Failed to update google event:', error);
+    }
   };
 
   // potentially show spinner or skeleton
